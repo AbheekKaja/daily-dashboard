@@ -1583,7 +1583,7 @@ body {
       </div>
 
       <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
-        Default PIN: <strong style="color: #38bdf8;">2026</strong> • Type on keyboard or tap
+        Type on keyboard or tap keypad
       </div>
     </div>
   </div>
@@ -1857,7 +1857,7 @@ body {
           </p>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button class="btn-secondary" onclick="handleChangePin()">🔑 Change 4-Digit PIN</button>
-            <button class="btn-secondary" style="color: var(--text-dim);" onclick="handleResetPin()">Reset PIN to Default (2026)</button>
+            <button class="btn-secondary" style="color: var(--text-dim);" onclick="handleResetPin()">Reset PIN to Default</button>
           </div>
         </div>
 
@@ -3391,7 +3391,7 @@ function verifyEnteredPin() {
       setTimeout(() => modal.classList.remove('pin-shake'), 450);
     }
     if (promptEl) {
-      promptEl.textContent = 'Incorrect PIN. Try again (Default: 2026)';
+      promptEl.textContent = 'Incorrect PIN. Please try again.';
       promptEl.style.color = '#f87171';
       setTimeout(() => {
         promptEl.textContent = 'Enter your 4-digit PIN to access';
@@ -3439,9 +3439,9 @@ function handleChangePin() {
 }
 
 function handleResetPin() {
-  if (confirm('Reset PIN back to default (2026)?')) {
+  if (confirm('Reset PIN back to default?')) {
     setStoredPin(DEFAULT_PIN);
-    showToast('PIN reset to default: 2026', 'info');
+    showToast('PIN reset to default', 'info');
   }
 }
 
