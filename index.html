@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>📅 Daily Dashboard</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
-  <style>
-:root {
+  <style>\n:root {
   --bg-app: #080305;
   --bg-card: rgba(22, 9, 14, 0.65);
   --bg-card-hover: rgba(35, 13, 21, 0.78);
@@ -1691,8 +1690,7 @@ body {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
-
-</style>
+\n</style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
@@ -2008,13 +2006,13 @@ body {
       <div class="modal-body">
         <!-- Security & PIN Management Section -->
         <div class="form-group">
-          <label>🔒 Dashboard PIN Security</label>
+          <label>🔒 Website Security PIN</label>
           <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px;">
-            Your dashboard is protected by a 4-digit PIN. Only visitors with your PIN can view your calendar, homework, and tasks.
+            Your website has an embedded 4-digit PIN (<strong id="currentPinDisplay" style="color: #f87171;">2026</strong>). Because this PIN is saved directly into the website code, your dashboard is locked by default across all devices and browsers without requiring any local browser setup.
           </p>
           <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button class="btn-secondary" onclick="handleChangePin()">🔑 Change 4-Digit PIN</button>
-            <button class="btn-secondary" style="color: var(--text-dim);" onclick="handleResetPin()">Reset PIN to Default</button>
+            <button class="btn-secondary" onclick="handleChangePin()">🔑 Change Website PIN &amp; Download Updated Site</button>
+            <button class="btn-secondary" style="color: var(--text-dim);" onclick="handleResetPin()">Reset to 2026</button>
           </div>
         </div>
 
@@ -2054,8 +2052,7 @@ body {
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <script>
-/**
+  <script>\n/**
  * Personal Daily Dashboard Web Application
  * Synchronized with User's Google Calendar & Google Tasks:
  * - School & Homework Hub: Classes from Walton High School (A.P. Gov, STEM Chem, Honors Alg II, STEM PLTW, Honors Lit)
@@ -3462,14 +3459,17 @@ function renderWeekOverview() {
 
 // --- PIN SECURITY & LOCK SCREEN MODULE ---
 let currentEnteredPin = '';
-const DEFAULT_PIN = '2026';
+// Master Website PIN embedded directly into the website code
+const WEBSITE_PIN = '2026';
+let activeWebsitePin = WEBSITE_PIN;
 
 function getStoredPin() {
-  return localStorage.getItem('pdd_dashboard_pin_v1') || DEFAULT_PIN;
+  // Stored directly in the website code so it works across all devices and browsers
+  return activeWebsitePin || WEBSITE_PIN;
 }
 
 function setStoredPin(pin) {
-  localStorage.setItem('pdd_dashboard_pin_v1', pin);
+  activeWebsitePin = pin;
 }
 
 function initPinLock() {
@@ -3569,6 +3569,27 @@ function lockDashboard() {
   }
 }
 
+function downloadUpdatedWebsite(newPin) {
+  try {
+    let fullHtml = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    fullHtml = fullHtml.replace(/const WEBSITE_PIN = ['"][0-9]{4}['"];/g, "const WEBSITE_PIN = '" + newPin + "';");
+    fullHtml = fullHtml.replace(/let activeWebsitePin = ['"][0-9]{4}['"];/g, "let activeWebsitePin = '" + newPin + "';");
+    fullHtml = fullHtml.replace(/<strong id="currentPinDisplay"[^>]*>[0-9]{4}<\/strong>/g, '<strong id="currentPinDisplay" style="color: #f87171;">' + newPin + '</strong>');
+    
+    const blob = new Blob([fullHtml], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Failed to export updated website HTML:', err);
+  }
+}
+
 function handleChangePin() {
   const currentPin = getStoredPin();
   const enteredCurrent = prompt('Enter your CURRENT 4-digit PIN:');
@@ -3590,13 +3611,23 @@ function handleChangePin() {
   }
 
   setStoredPin(newPin);
-  showToast('PIN successfully updated! 🔑', 'success');
+  const currentPinDisplay = document.getElementById('currentPinDisplay');
+  if (currentPinDisplay) {
+    currentPinDisplay.textContent = newPin;
+  }
+  downloadUpdatedWebsite(newPin);
+  showToast('Website PIN updated to ' + newPin + '! 🔑 (Downloaded updated index.html)', 'success');
 }
 
 function handleResetPin() {
-  if (confirm('Reset PIN back to default?')) {
-    setStoredPin(DEFAULT_PIN);
-    showToast('PIN reset to default', 'info');
+  if (confirm('Reset PIN back to default (2026)?')) {
+    setStoredPin(WEBSITE_PIN);
+    const currentPinDisplay = document.getElementById('currentPinDisplay');
+    if (currentPinDisplay) {
+      currentPinDisplay.textContent = WEBSITE_PIN;
+    }
+    downloadUpdatedWebsite(WEBSITE_PIN);
+    showToast('PIN reset to default (2026)', 'info');
   }
 }
 
@@ -3854,7 +3885,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
-
-</script>
+\n</script>
 </body>
 </html>
