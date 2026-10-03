@@ -1363,6 +1363,181 @@ body {
   font-style: italic;
 }
 
+/* ========================================================
+   SECTION: PIN LOCK SCREEN & SECURITY
+   ======================================================== */
+.lock-screen-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(11, 15, 25, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.lock-screen-overlay.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.pin-modal {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(99, 102, 241, 0.2);
+  width: 100%;
+  max-width: 360px;
+  padding: 32px 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  animation: modalAppear 0.3s ease;
+}
+
+@keyframes modalAppear {
+  from { transform: scale(0.92); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.pin-shield-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), var(--cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+
+.pin-title-wrap h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.pin-title-wrap p {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.pin-dots-container {
+  display: flex;
+  gap: 14px;
+  margin: 6px 0;
+}
+
+.pin-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--text-dim);
+  background: transparent;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.pin-dot.filled {
+  background: var(--primary-light);
+  border-color: var(--primary-light);
+  box-shadow: 0 0 10px rgba(129, 140, 248, 0.6);
+  transform: scale(1.15);
+}
+
+.pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 260px;
+}
+
+.keypad-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  user-select: none;
+}
+
+.keypad-btn:hover {
+  background: var(--bg-elevated);
+  border-color: var(--primary-light);
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.keypad-btn:active {
+  background: var(--primary);
+  transform: scale(0.95);
+}
+
+.keypad-btn.action-btn {
+  font-size: 1rem;
+  font-weight: 600;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.keypad-btn.action-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pin-shake {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-10px); }
+  40%, 80% { transform: translateX(10px); }
+}
+
+.btn-lock {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  padding: 6px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.btn-lock:hover {
+  background: var(--rose-bg);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+
 </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1374,6 +1549,45 @@ body {
 </head>
 <body>
 
+  <!-- Full-Screen PIN Lock Screen Overlay -->
+  <div class="lock-screen-overlay" id="lockScreenOverlay">
+    <div class="pin-modal">
+      <div class="pin-shield-icon">🔒</div>
+      <div class="pin-title-wrap">
+        <h3>Private Dashboard</h3>
+        <p id="pinPromptText">Enter your 4-digit PIN to access</p>
+      </div>
+
+      <!-- 4 PIN Dots -->
+      <div class="pin-dots-container">
+        <div class="pin-dot" id="pinDot0"></div>
+        <div class="pin-dot" id="pinDot1"></div>
+        <div class="pin-dot" id="pinDot2"></div>
+        <div class="pin-dot" id="pinDot3"></div>
+      </div>
+
+      <!-- Numeric Keypad (Touch, Mouse & Keyboard Supported) -->
+      <div class="pin-keypad">
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('1')">1</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('2')">2</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('3')">3</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('4')">4</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('5')">5</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('6')">6</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('7')">7</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('8')">8</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('9')">9</button>
+        <button type="button" class="keypad-btn action-btn" onclick="clearPinDigits()">C</button>
+        <button type="button" class="keypad-btn" onclick="enterPinDigit('0')">0</button>
+        <button type="button" class="keypad-btn action-btn" onclick="deletePinDigit()">⌫</button>
+      </div>
+
+      <div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 4px;">
+        Default PIN: <strong style="color: #38bdf8;">2026</strong> • Type on keyboard or tap
+      </div>
+    </div>
+  </div>
+
   <!-- Top Dashboard Header -->
   <header class="dashboard-header">
     <div class="header-top">
@@ -1381,18 +1595,21 @@ body {
         <div class="brand-icon">⚡</div>
         <div class="brand-text">
           <h1>Daily Command</h1>
-          <p>Personal Workspace • <span style="color: #38bdf8; font-weight: 600;">📅 Calendar &amp; Tasks Connected</span> • East Cobb, GA</p>
+          <p>Personal Workspace • <span style="color: #38bdf8; font-weight: 600;">🔒 PIN Protected</span> • East Cobb, GA</p>
         </div>
       </div>
 
       <div class="header-datetime">
-        <span class="live-clock" id="liveClock">12:16:37 PM</span>
+        <span class="live-clock" id="liveClock">12:26:14 PM</span>
         <span class="date-display" id="dateDisplay">Saturday, October 3, 2026</span>
       </div>
 
       <div class="header-actions">
         <button class="checkin-btn" id="checkinBtn" onclick="handleCheckinClick()">
           <span>🔥</span> <span id="streakCount">5 Day Streak</span>
+        </button>
+        <button class="btn-lock" onclick="lockDashboard()" title="Lock Screen">
+          🔒 Lock
         </button>
         <button class="btn-icon" title="Data Backup &amp; Storage Settings" onclick="openSettingsModal()">
           ⚙️
@@ -1628,14 +1845,25 @@ body {
   <div class="modal-overlay" id="settingsModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3>Storage &amp; Data Management</h3>
+        <h3>Storage &amp; Security Settings</h3>
         <button class="btn-mini" onclick="closeSettingsModal()">✕</button>
       </div>
       <div class="modal-body">
-        <p style="font-size: 0.88rem; color: var(--text-muted);">
-          All tasks, homework assignments, and check-in records are automatically synchronized from your Google Calendar &amp; Tasks and stored in your browser's persistent LocalStorage.
-        </p>
+        <!-- Security & PIN Management Section -->
+        <div class="form-group">
+          <label>🔒 Dashboard PIN Security</label>
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 8px;">
+            Your dashboard is protected by a 4-digit PIN. Only visitors with your PIN can view your calendar, homework, and tasks.
+          </p>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button class="btn-secondary" onclick="handleChangePin()">🔑 Change 4-Digit PIN</button>
+            <button class="btn-secondary" style="color: var(--text-dim);" onclick="handleResetPin()">Reset PIN to Default (2026)</button>
+          </div>
+        </div>
 
+        <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 6px 0;">
+
+        <!-- Data Backup Section -->
         <div class="form-group">
           <label>Data Backup &amp; Portability</label>
           <div style="display: flex; gap: 10px; margin-top: 6px;">
@@ -1649,6 +1877,7 @@ body {
 
         <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 6px 0;">
 
+        <!-- Re-sync Section -->
         <div class="form-group">
           <label>Re-sync with Calendar &amp; Tasks</label>
           <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 8px;">
@@ -3073,9 +3302,153 @@ function renderWeekOverview() {
   `).join('');
 }
 
+
+// --- PIN SECURITY & LOCK SCREEN MODULE ---
+let currentEnteredPin = '';
+const DEFAULT_PIN = '2026';
+
+function getStoredPin() {
+  return localStorage.getItem('pdd_dashboard_pin_v1') || DEFAULT_PIN;
+}
+
+function setStoredPin(pin) {
+  localStorage.setItem('pdd_dashboard_pin_v1', pin);
+}
+
+function initPinLock() {
+  // Check if session is already unlocked in this browser tab
+  const isSessionUnlocked = sessionStorage.getItem('pdd_session_unlocked') === 'true';
+  const overlay = document.getElementById('lockScreenOverlay');
+  
+  if (!isSessionUnlocked) {
+    if (overlay) overlay.classList.remove('hidden');
+    currentEnteredPin = '';
+    updatePinDots();
+  } else {
+    if (overlay) overlay.classList.add('hidden');
+  }
+
+  // Support physical keyboard input for PIN
+  window.addEventListener('keydown', (e) => {
+    if (!overlay || overlay.classList.contains('hidden')) return;
+
+    if (e.key >= '0' && e.key <= '9') {
+      enterPinDigit(e.key);
+    } else if (e.key === 'Backspace') {
+      deletePinDigit();
+    } else if (e.key === 'Escape' || e.key === 'c' || e.key === 'C') {
+      clearPinDigits();
+    }
+  });
+}
+
+function enterPinDigit(digit) {
+  if (currentEnteredPin.length >= 4) return;
+  currentEnteredPin += digit;
+  updatePinDots();
+
+  if (currentEnteredPin.length === 4) {
+    setTimeout(verifyEnteredPin, 150);
+  }
+}
+
+function deletePinDigit() {
+  if (currentEnteredPin.length > 0) {
+    currentEnteredPin = currentEnteredPin.slice(0, -1);
+    updatePinDots();
+  }
+}
+
+function clearPinDigits() {
+  currentEnteredPin = '';
+  updatePinDots();
+}
+
+function updatePinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = document.getElementById(`pinDot${i}`);
+    if (dot) {
+      dot.classList.toggle('filled', i < currentEnteredPin.length);
+    }
+  }
+}
+
+function verifyEnteredPin() {
+  const correctPin = getStoredPin();
+  const overlay = document.getElementById('lockScreenOverlay');
+  const modal = document.querySelector('.pin-modal');
+  const promptEl = document.getElementById('pinPromptText');
+
+  if (currentEnteredPin === correctPin) {
+    sessionStorage.setItem('pdd_session_unlocked', 'true');
+    if (overlay) overlay.classList.add('hidden');
+    currentEnteredPin = '';
+    updatePinDots();
+    showToast('Dashboard unlocked! 🔓', 'success');
+  } else {
+    if (modal) {
+      modal.classList.add('pin-shake');
+      setTimeout(() => modal.classList.remove('pin-shake'), 450);
+    }
+    if (promptEl) {
+      promptEl.textContent = 'Incorrect PIN. Try again (Default: 2026)';
+      promptEl.style.color = '#f87171';
+      setTimeout(() => {
+        promptEl.textContent = 'Enter your 4-digit PIN to access';
+        promptEl.style.color = 'var(--text-muted)';
+      }, 2500);
+    }
+    currentEnteredPin = '';
+    updatePinDots();
+  }
+}
+
+function lockDashboard() {
+  sessionStorage.removeItem('pdd_session_unlocked');
+  const overlay = document.getElementById('lockScreenOverlay');
+  if (overlay) {
+    overlay.classList.remove('hidden');
+    currentEnteredPin = '';
+    updatePinDots();
+    showToast('Dashboard locked 🔒', 'info');
+  }
+}
+
+function handleChangePin() {
+  const currentPin = getStoredPin();
+  const enteredCurrent = prompt('Enter your CURRENT 4-digit PIN:');
+  if (enteredCurrent !== currentPin) {
+    alert('Incorrect current PIN.');
+    return;
+  }
+
+  const newPin = prompt('Enter NEW 4-digit PIN (numbers only):');
+  if (!newPin || newPin.length !== 4 || isNaN(newPin)) {
+    alert('Invalid PIN. It must be exactly 4 digits.');
+    return;
+  }
+
+  const confirmPin = prompt('Confirm NEW 4-digit PIN:');
+  if (newPin !== confirmPin) {
+    alert('PINs do not match.');
+    return;
+  }
+
+  setStoredPin(newPin);
+  showToast('PIN successfully updated! 🔑', 'success');
+}
+
+function handleResetPin() {
+  if (confirm('Reset PIN back to default (2026)?')) {
+    setStoredPin(DEFAULT_PIN);
+    showToast('PIN reset to default: 2026', 'info');
+  }
+}
+
 // --- APP INITIALIZATION ---
 document.addEventListener('DOMContentLoaded', () => {
   initHeader();
+  initPinLock();
   renderWeekOverview();
   renderNews();
   renderHomework();
