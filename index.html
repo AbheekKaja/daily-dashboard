@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daily Command // Red Glassmorphism Dashboard</title>
+  <title>📅 Daily Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📅</text></svg>">
   <style>
 :root {
   --bg-app: #080305;
@@ -1748,9 +1749,9 @@ body {
   <header class="dashboard-header">
     <div class="header-top">
       <div class="brand-section">
-        <div class="brand-icon">⚡</div>
+        <div class="brand-icon">📅</div>
         <div class="brand-text">
-          <h1>Daily Command</h1>
+          <h1>Abheek Dashboard</h1>
           <p>Personal Workspace • <span style="color: #f87171; font-weight: 600;">🔒 PIN Protected</span> • East Cobb, GA</p>
         </div>
       </div>
@@ -3600,7 +3601,7 @@ function handleResetPin() {
 }
 
 
-// --- INTERACTIVE REACTIVE BACKGROUND ENGINE ---
+// --- INTERACTIVE MOVING STARRY BACKGROUND ENGINE ---
 function initReactiveBackground() {
   const canvas = document.getElementById('reactiveBgCanvas');
   if (!canvas) return;
@@ -3609,7 +3610,6 @@ function initReactiveBackground() {
   let width = (canvas.width = window.innerWidth);
   let height = (canvas.height = window.innerHeight);
 
-  // Mouse tracking with smooth lerp
   let mouse = { x: width / 2, y: height / 2, targetX: width / 2, targetY: height / 2 };
 
   window.addEventListener('resize', () => {
@@ -3622,87 +3622,165 @@ function initReactiveBackground() {
     mouse.targetY = e.clientY;
   });
 
-  // Ambient orbs
-  const orbs = [
-    { x: width * 0.2, y: height * 0.3, radius: 280, color: 'rgba(239, 68, 68, 0.16)', vx: 0.3, vy: 0.2 },
-    { x: width * 0.8, y: height * 0.6, radius: 340, color: 'rgba(225, 29, 72, 0.14)', vx: -0.2, vy: 0.3 },
-    { x: width * 0.5, y: height * 0.8, radius: 260, color: 'rgba(185, 28, 28, 0.15)', vx: 0.25, vy: -0.25 },
-    { x: width * 0.15, y: height * 0.85, radius: 220, color: 'rgba(251, 113, 133, 0.1)', vx: -0.15, vy: -0.2 }
+  // Cosmic Nebula Cloud Orbs (Crimson & Ruby)
+  const nebulae = [
+    { x: width * 0.2, y: height * 0.25, radius: 360, color: 'rgba(239, 68, 68, 0.16)', vx: 0.15, vy: 0.08 },
+    { x: width * 0.82, y: height * 0.55, radius: 420, color: 'rgba(225, 29, 72, 0.14)', vx: -0.12, vy: 0.15 },
+    { x: width * 0.45, y: height * 0.85, radius: 380, color: 'rgba(185, 28, 28, 0.14)', vx: 0.1, vy: -0.12 },
+    { x: width * 0.1, y: height * 0.9, radius: 280, color: 'rgba(251, 113, 133, 0.1)', vx: -0.08, vy: -0.1 }
   ];
 
-  // Particle dust
-  const particles = [];
-  const particleCount = 45;
-  for (let i = 0; i < particleCount; i++) {
-    particles.push({
+  // Moving Starfield (3 Depth Layers for Parallax & Realism)
+  const starCount = 180;
+  const stars = [];
+
+  for (let i = 0; i < starCount; i++) {
+    const layer = Math.random() < 0.5 ? 1 : (Math.random() < 0.75 ? 2 : 3);
+    stars.push({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: Math.random() * 2 + 1,
-      vx: (Math.random() - 0.5) * 0.4,
-      vy: (Math.random() - 0.5) * 0.4,
-      alpha: Math.random() * 0.4 + 0.1
+      size: layer === 1 ? Math.random() * 0.8 + 0.6 : (layer === 2 ? Math.random() * 1.2 + 1.0 : Math.random() * 1.6 + 1.8),
+      layer: layer,
+      vx: -(layer * 0.12 + Math.random() * 0.08),
+      vy: (layer * 0.06 + Math.random() * 0.04),
+      baseAlpha: Math.random() * 0.4 + 0.3,
+      twinkleSpeed: Math.random() * 0.03 + 0.01,
+      phase: Math.random() * Math.PI * 2,
+      hasGlow: layer === 3 && Math.random() > 0.4
     });
   }
 
+  // Shooting Stars / Meteors Manager
+  const shootingStars = [];
+  let lastShootingStarTime = Date.now();
+
+  function spawnShootingStar() {
+    shootingStars.push({
+      x: Math.random() * (width * 0.8) + width * 0.2,
+      y: Math.random() * (height * 0.4),
+      length: Math.random() * 100 + 80,
+      speed: Math.random() * 8 + 10,
+      angle: Math.PI / 4 + (Math.random() - 0.5) * 0.2, // ~45 degree trajectory
+      opacity: 1,
+      decay: Math.random() * 0.015 + 0.015,
+      thickness: Math.random() * 1.8 + 1.2
+    });
+  }
+
+  let time = 0;
+
   function render() {
+    time += 0.03;
     ctx.clearRect(0, 0, width, height);
 
-    // Smooth cursor inertia
-    mouse.x += (mouse.targetX - mouse.x) * 0.06;
-    mouse.y += (mouse.targetY - mouse.y) * 0.06;
+    // Smooth cursor tracking
+    mouse.x += (mouse.targetX - mouse.x) * 0.05;
+    mouse.y += (mouse.targetY - mouse.y) * 0.05;
+    const normX = (mouse.x - width / 2) / width;
+    const normY = (mouse.y - height / 2) / height;
 
-    // Draw interactive cursor spotlight (glow behind frosted glass)
-    const cursorGlow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 400);
-    cursorGlow.addColorStop(0, 'rgba(239, 68, 68, 0.22)');
-    cursorGlow.addColorStop(0.5, 'rgba(225, 29, 72, 0.08)');
-    cursorGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
-    ctx.fillStyle = cursorGlow;
-    ctx.beginPath();
-    ctx.arc(mouse.x, mouse.y, 400, 0, Math.PI * 2);
-    ctx.fill();
+    // 1. Draw Nebula Clouds
+    for (const neb of nebulae) {
+      neb.x += neb.vx;
+      neb.y += neb.vy;
 
-    // Draw ambient floating orbs
-    for (const orb of orbs) {
-      orb.x += orb.vx;
-      orb.y += orb.vy;
+      if (neb.x < -neb.radius) neb.x = width + neb.radius;
+      if (neb.x > width + neb.radius) neb.x = -neb.radius;
+      if (neb.y < -neb.radius) neb.y = height + neb.radius;
+      if (neb.y > height + neb.radius) neb.y = -neb.radius;
 
-      if (orb.x < -orb.radius) orb.x = width + orb.radius;
-      if (orb.x > width + orb.radius) orb.x = -orb.radius;
-      if (orb.y < -orb.radius) orb.y = height + orb.radius;
-      if (orb.y > height + orb.radius) orb.y = -orb.radius;
-
-      const grad = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.radius);
-      grad.addColorStop(0, orb.color);
+      const grad = ctx.createRadialGradient(neb.x, neb.y, 0, neb.x, neb.y, neb.radius);
+      grad.addColorStop(0, neb.color);
       grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
 
       ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+      ctx.arc(neb.x, neb.y, neb.radius, 0, Math.PI * 2);
       ctx.fill();
     }
 
-    // Draw floating particles reacting subtly to cursor
-    for (const p of particles) {
-      p.x += p.vx;
-      p.y += p.vy;
+    // 2. Draw Interactive Cursor Spotlight
+    const cursorGlow = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, 420);
+    cursorGlow.addColorStop(0, 'rgba(239, 68, 68, 0.24)');
+    cursorGlow.addColorStop(0.5, 'rgba(225, 29, 72, 0.08)');
+    cursorGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = cursorGlow;
+    ctx.beginPath();
+    ctx.arc(mouse.x, mouse.y, 420, 0, Math.PI * 2);
+    ctx.fill();
 
-      if (p.x < 0) p.x = width;
-      if (p.x > width) p.x = 0;
-      if (p.y < 0) p.y = height;
-      if (p.y > height) p.y = 0;
+    // 3. Draw & Move Stars
+    for (const s of stars) {
+      s.x += s.vx;
+      s.y += s.vy;
 
-      // Slight mouse repulsion
-      const dx = p.x - mouse.x;
-      const dy = p.y - mouse.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      if (dist < 120 && dist > 0) {
-        p.x += (dx / dist) * 0.8;
-        p.y += (dy / dist) * 0.8;
+      // Wrap around screen borders
+      if (s.x < 0) s.x = width;
+      if (s.x > width) s.x = 0;
+      if (s.y < 0) s.y = height;
+      if (s.y > height) s.y = 0;
+
+      // Parallax shift from cursor
+      const px = s.x + normX * s.layer * 12;
+      const py = s.y + normY * s.layer * 12;
+
+      // Twinkle calculation
+      const currentAlpha = Math.max(0.1, Math.min(1, s.baseAlpha + Math.sin(time * s.twinkleSpeed * 10 + s.phase) * 0.35));
+
+      // Draw Star Core
+      ctx.fillStyle = `rgba(255, 255, 255, ${currentAlpha})`;
+      ctx.beginPath();
+      ctx.arc(px, py, s.size, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Subtle Red/Ruby Star Halo for larger stars
+      if (s.hasGlow) {
+        ctx.fillStyle = `rgba(254, 205, 211, ${currentAlpha * 0.35})`;
+        ctx.beginPath();
+        ctx.arc(px, py, s.size * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // 4. Update & Draw Shooting Stars (Meteors)
+    const now = Date.now();
+    if (now - lastShootingStarTime > 4000 + Math.random() * 3000) {
+      spawnShootingStar();
+      lastShootingStarTime = now;
+    }
+
+    for (let i = shootingStars.length - 1; i >= 0; i--) {
+      const ss = shootingStars[i];
+      ss.x -= Math.cos(ss.angle) * ss.speed;
+      ss.y += Math.sin(ss.angle) * ss.speed;
+      ss.opacity -= ss.decay;
+
+      if (ss.opacity <= 0 || ss.x < -100 || ss.y > height + 100) {
+        shootingStars.splice(i, 1);
+        continue;
       }
 
-      ctx.fillStyle = `rgba(252, 165, 165, ${p.alpha})`;
+      const tailX = ss.x + Math.cos(ss.angle) * ss.length;
+      const tailY = ss.y - Math.sin(ss.angle) * ss.length;
+
+      const meteorGrad = ctx.createLinearGradient(ss.x, ss.y, tailX, tailY);
+      meteorGrad.addColorStop(0, `rgba(255, 255, 255, ${ss.opacity})`);
+      meteorGrad.addColorStop(0.2, `rgba(251, 113, 133, ${ss.opacity * 0.8})`);
+      meteorGrad.addColorStop(0.6, `rgba(239, 68, 68, ${ss.opacity * 0.4})`);
+      meteorGrad.addColorStop(1, 'rgba(239, 68, 68, 0)');
+
+      ctx.strokeStyle = meteorGrad;
+      ctx.lineWidth = ss.thickness;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.moveTo(ss.x, ss.y);
+      ctx.lineTo(tailX, tailY);
+      ctx.stroke();
+
+      // Bright head point
+      ctx.fillStyle = `rgba(255, 255, 255, ${ss.opacity})`;
+      ctx.beginPath();
+      ctx.arc(ss.x, ss.y, ss.thickness * 1.2, 0, Math.PI * 2);
       ctx.fill();
     }
 
