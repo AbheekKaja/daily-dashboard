@@ -1,0 +1,3141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daily Command // Google Calendar &amp; Tasks Dashboard</title>
+  <style>
+:root {
+  --bg-app: #0b0f19;
+  --bg-card: #111827;
+  --bg-card-hover: #162032;
+  --bg-elevated: #1f293d;
+  --bg-input: #0e1524;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-focus: #6366f1;
+  --text-main: #f9fafb;
+  --text-muted: #9ca3af;
+  --text-dim: #6b7280;
+  
+  --primary: #6366f1;
+  --primary-light: #818cf8;
+  --primary-glow: rgba(99, 102, 241, 0.25);
+  
+  --cyan: #06b6d4;
+  --emerald: #10b981;
+  --emerald-bg: rgba(16, 185, 129, 0.12);
+  --amber: #f59e0b;
+  --amber-bg: rgba(245, 158, 11, 0.12);
+  --rose: #ef4444;
+  --rose-bg: rgba(239, 68, 68, 0.15);
+  --purple: #a855f7;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+  
+  --shadow-card: 0 4px 20px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.2);
+  
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  line-height: 1.5;
+  min-height: 100vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-app);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary);
+}
+
+/* Top App Header */
+.dashboard-header {
+  background: linear-gradient(135deg, rgba(17, 24, 39, 0.9), rgba(31, 41, 61, 0.7));
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-header::before {
+  content: "";
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  background: linear-gradient(135deg, var(--primary), var(--cyan));
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 22px;
+  box-shadow: var(--shadow-glow);
+}
+
+.brand-text h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  background: linear-gradient(to right, #ffffff, #cbd5e1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-text p {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.header-datetime {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(14, 21, 36, 0.7);
+  padding: 8px 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+}
+
+.live-clock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--primary-light);
+}
+
+.date-display {
+  font-size: 0.9rem;
+  color: var(--text-main);
+  border-left: 1px solid var(--border-subtle);
+  padding-left: 14px;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Progress & Motivation Bar */
+.progress-card {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 20px;
+}
+
+.progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.motivation-quote {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.motivation-quote .quote-badge {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.progress-stats {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-bar-container {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--primary), var(--cyan), var(--emerald));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+  position: relative;
+}
+
+.checkin-btn {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2));
+  border: 1px solid var(--primary-light);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.checkin-btn:hover {
+  background: var(--primary);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+/* Dashboard Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr 1.1fr;
+  gap: 24px;
+  flex: 1;
+}
+
+@media (max-width: 1200px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .news-section {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    padding: 12px;
+  }
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+  .news-section {
+    grid-column: span 1;
+  }
+  .progress-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Cards */
+.dash-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: calc(100vh - 240px);
+  min-height: 600px;
+}
+
+.card-header {
+  padding: 16px 20px;
+  background: rgba(14, 21, 36, 0.6);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-icon {
+  font-size: 1.2rem;
+  color: var(--primary-light);
+  display: flex;
+  align-items: center;
+}
+
+.card-title-group h2 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  padding: 7px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 7px 12px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-icon:hover {
+  color: #fff;
+  border-color: var(--primary-light);
+  background: var(--bg-card-hover);
+}
+
+/* Tabs */
+.tabs-bar {
+  display: flex;
+  background: var(--bg-input);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.tab-btn.active {
+  background: var(--bg-elevated);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--text-main);
+}
+
+/* Card Subheader / Filters */
+.card-filter-row {
+  padding: 12px 20px;
+  background: rgba(14, 21, 36, 0.3);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  max-width: 100%;
+  padding-bottom: 2px;
+}
+
+.filter-pill {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.filter-pill:hover,
+.filter-pill.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.search-input-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 140px;
+}
+
+.search-input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 6px 10px 6px 30px;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--primary);
+  background: #111a2e;
+}
+
+.search-icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-dim);
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+/* Card Content / List Containers */
+.card-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ========================================================
+   SECTION 1: NEWS FEED STYLES
+   ======================================================== */
+.news-item {
+  background: rgba(14, 21, 36, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.news-item:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(99, 102, 241, 0.4);
+  transform: translateY(-1px);
+}
+
+.news-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+
+.news-source-tag {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}
+
+.news-time {
+  color: var(--text-dim);
+}
+
+.news-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #f1f5f9;
+}
+
+.news-summary {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.news-link-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.news-link {
+  color: var(--cyan);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+}
+
+.news-link:hover {
+  text-decoration: underline;
+  color: #38bdf8;
+}
+
+.refresh-spin {
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================================
+   SECTION 2: HOMEWORK HUB STYLES
+   ======================================================== */
+.homework-stats-banner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 0 20px 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.hw-stat-box {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px;
+  text-align: center;
+}
+
+.hw-stat-val {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.hw-stat-lbl {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.homework-card-item {
+  background: rgba(14, 21, 36, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  transition: var(--transition);
+}
+
+.homework-card-item:hover {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: var(--bg-card-hover);
+}
+
+.homework-card-item.urgent-24h {
+  border-left: 4px solid var(--rose);
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, rgba(14, 21, 36, 0.6) 100%);
+}
+
+.homework-card-item.urgent-48h {
+  border-left: 4px solid var(--amber);
+  background: linear-gradient(90deg, rgba(245, 158, 11, 0.08) 0%, rgba(14, 21, 36, 0.6) 100%);
+}
+
+.homework-card-item.is-completed {
+  opacity: 0.6;
+  border-left: 4px solid var(--emerald);
+}
+
+.homework-card-item.is-completed .homework-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.homework-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.subject-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary-light);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+/* Subject Colors */
+.subject-math { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border-color: rgba(59, 130, 246, 0.3); }
+.subject-cs { background: rgba(16, 185, 129, 0.15); color: #34d399; border-color: rgba(16, 185, 129, 0.3); }
+.subject-physics { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.3); }
+.subject-history { background: rgba(236, 72, 153, 0.15); color: #f472b6; border-color: rgba(236, 72, 153, 0.3); }
+.subject-english { background: rgba(168, 85, 247, 0.15); color: #c084fc; border-color: rgba(168, 85, 247, 0.3); }
+
+.countdown-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.countdown-badge.urgent {
+  background: var(--rose-bg);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  animation: pulse-glow 2s infinite;
+}
+
+.countdown-badge.warning {
+  background: var(--amber-bg);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.countdown-badge.normal {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-muted);
+}
+
+.countdown-badge.overdue {
+  background: #7f1d1d;
+  color: #fecaca;
+  font-weight: 800;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.homework-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.homework-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.hw-meta-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.priority-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.priority-high { background: var(--rose-bg); color: #f87171; }
+.priority-medium { background: var(--amber-bg); color: #fbbf24; }
+.priority-low { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+
+.status-select {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.status-select:focus {
+  border-color: var(--primary);
+}
+
+.hw-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-mini {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.btn-mini:hover {
+  color: #fff;
+  background: var(--bg-elevated);
+}
+
+.btn-mini.danger:hover {
+  color: #f87171;
+  background: var(--rose-bg);
+}
+
+/* ========================================================
+   SECTION 3: INTERACTIVE TO-DO LIST STYLES
+   ======================================================== */
+.todo-quick-add {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 14px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.todo-add-input {
+  flex: 1;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 8px 12px;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.todo-add-input:focus {
+  border-color: var(--primary);
+  background: #111a2e;
+}
+
+.todo-item {
+  background: rgba(14, 21, 36, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: var(--transition);
+  cursor: grab;
+  user-select: none;
+  position: relative;
+}
+
+.todo-item:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.todo-item.dragging {
+  opacity: 0.4;
+  border: 1px dashed var(--primary);
+  cursor: grabbing;
+}
+
+.todo-item.drag-over {
+  border-top: 2px solid var(--primary);
+}
+
+.todo-drag-handle {
+  color: var(--text-dim);
+  cursor: grab;
+  font-size: 0.9rem;
+  padding: 2px 4px;
+}
+.todo-drag-handle:hover {
+  color: var(--text-muted);
+}
+
+.todo-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--text-dim);
+  border-radius: 5px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.todo-checkbox:checked {
+  background: var(--emerald);
+  border-color: var(--emerald);
+}
+
+.todo-checkbox:checked::after {
+  content: "✓";
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.todo-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.todo-title {
+  font-size: 0.88rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  outline: none;
+}
+
+.todo-item.completed .todo-title {
+  text-decoration: line-through;
+  color: var(--text-dim);
+}
+
+.todo-inline-input {
+  background: var(--bg-input);
+  border: 1px solid var(--primary);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.88rem;
+  width: 100%;
+  outline: none;
+}
+
+.todo-details-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+}
+
+.tag-badge {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-muted);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.tag-badge.tag-school { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+.tag-badge.tag-personal { background: rgba(168, 85, 247, 0.15); color: #d8b4fe; }
+.tag-badge.tag-projects { background: rgba(16, 185, 129, 0.15); color: #6ee7b7; }
+
+.todo-due-date {
+  color: var(--text-dim);
+}
+
+.todo-due-date.is-today {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-dim);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.empty-state-icon {
+  font-size: 2.2rem;
+  color: var(--text-dim);
+  opacity: 0.6;
+}
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-dialog {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+  width: 100%;
+  max-width: 500px;
+  overflow: hidden;
+  transform: translateY(20px) scale(0.97);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.active .modal-dialog {
+  transform: translateY(0) scale(1);
+}
+
+.modal-header {
+  padding: 18px 24px;
+  background: rgba(14, 21, 36, 0.7);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal-header h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.form-control {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  color: var(--text-main);
+  font-size: 0.88rem;
+  outline: none;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  border-color: var(--primary);
+  background: #111a2e;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modal-footer {
+  padding: 16px 24px;
+  background: rgba(14, 21, 36, 0.5);
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 2000;
+}
+
+.toast {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: slideIn 0.25s ease;
+  color: #fff;
+}
+
+.toast.toast-success { border-left: 4px solid var(--emerald); }
+.toast.toast-info { border-left: 4px solid var(--primary); }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* Homework Checkbox & Quick Done Toggle */
+.hw-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.hw-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--text-dim);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.hw-checkbox:hover {
+  border-color: var(--emerald);
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.hw-checkbox:checked {
+  background: var(--emerald);
+  border-color: var(--emerald);
+}
+
+.hw-checkbox:checked::after {
+  content: "✓";
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.btn-mark-done {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  color: #34d399;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: var(--transition);
+}
+
+.btn-mark-done:hover {
+  background: var(--emerald);
+  color: #fff;
+}
+
+.btn-mark-done.is-completed {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-muted);
+}
+
+.tag-badge.tag-fitness { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.tag-badge.tag-errands { background: rgba(14, 165, 233, 0.15); color: #38bdf8; }
+
+/* ========================================================
+   SECTION: GOOGLE CALENDAR WEEK OVERVIEW
+   ======================================================== */
+.week-overview-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow-card);
+}
+
+.week-overview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.week-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.week-title-wrap h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.week-date-range {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+@media (max-width: 1024px) {
+  .week-grid {
+    grid-template-columns: repeat(7, minmax(140px, 1fr));
+  }
+}
+
+.week-day-card {
+  background: rgba(14, 21, 36, 0.6);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 170px;
+  transition: var(--transition);
+}
+
+.week-day-card:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+}
+
+.week-day-card.is-today {
+  border: 1px solid #38bdf8;
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.08) 0%, rgba(14, 21, 36, 0.7) 100%);
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.15);
+}
+
+.week-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 6px;
+}
+
+.week-day-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.week-day-date {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.today-pill {
+  background: #0284c7;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.week-day-events {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.week-event-chip {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-left-width: 3px;
+  border-radius: 4px;
+  padding: 5px 6px;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--text-main);
+  transition: var(--transition);
+}
+
+.week-event-chip:hover {
+  background: var(--bg-elevated);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.chip-time {
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.chip-title {
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.week-empty-day {
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  text-align: center;
+  margin: auto 0;
+  font-style: italic;
+}
+
+</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+    .live-clock { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body>
+
+  <!-- Top Dashboard Header -->
+  <header class="dashboard-header">
+    <div class="header-top">
+      <div class="brand-section">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-text">
+          <h1>Daily Command</h1>
+          <p>Personal Workspace • <span style="color: #38bdf8; font-weight: 600;">📅 Calendar &amp; Tasks Connected</span> • East Cobb, GA</p>
+        </div>
+      </div>
+
+      <div class="header-datetime">
+        <span class="live-clock" id="liveClock">12:16:37 PM</span>
+        <span class="date-display" id="dateDisplay">Saturday, October 3, 2026</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="checkin-btn" id="checkinBtn" onclick="handleCheckinClick()">
+          <span>🔥</span> <span id="streakCount">5 Day Streak</span>
+        </button>
+        <button class="btn-icon" title="Data Backup &amp; Storage Settings" onclick="openSettingsModal()">
+          ⚙️
+        </button>
+      </div>
+    </div>
+
+    <!-- Motivational Progress Bar & Check-in Counter -->
+    <div class="progress-card">
+      <div class="progress-info">
+        <div class="progress-status-row">
+          <div class="motivation-quote">
+            <span class="quote-badge">Daily Focus</span>
+            <span id="motivationText">Ready to conquer today's goals! Pick your first win.</span>
+          </div>
+          <div class="progress-stats" id="progressStatsText">0 of 0 items completed (0%)</div>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar-fill" id="progressBarFill"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Google Calendar Short Week Overview Strip -->
+  <section class="week-overview-section">
+    <div class="week-overview-header">
+      <div class="week-title-wrap">
+        <h2><span>📅</span> Google Calendar Week Overview</h2>
+        <span class="week-date-range">Oct 3 – Oct 9, 2026 (7-Day Rolling View)</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="font-size: 0.72rem; color: var(--text-dim);">Eastern Daylight Time (EDT)</span>
+        <button class="btn-secondary" style="font-size: 0.75rem; padding: 4px 10px;" onclick="renderWeekOverview()" title="Refresh week schedule">
+          🔄 Refresh
+        </button>
+      </div>
+    </div>
+    <div class="week-grid" id="weekGridContainer">
+      <!-- Rendered dynamically by app.js -->
+    </div>
+  </section>
+
+  <!-- Main Dashboard Grid -->
+  <main class="dashboard-grid">
+
+    <!-- Section 1: School & Homework Hub (With Mark as Done Checkboxes) -->
+    <section class="dash-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon">🎓</span>
+          <div>
+            <h2>Homework Hub</h2>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Google Calendar Course Schedule</span>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="btn-primary" onclick="openAddHomeworkModal()">+ Assignment</button>
+        </div>
+      </div>
+
+      <!-- Quick Stats Banner -->
+      <div class="homework-stats-banner">
+        <div class="hw-stat-box">
+          <div class="hw-stat-val" id="hwStatUrgent" style="color: #f87171;">0</div>
+          <div class="hw-stat-lbl">Due Soon (&lt;48h)</div>
+        </div>
+        <div class="hw-stat-box">
+          <div class="hw-stat-val" id="hwStatProgress" style="color: #fbbf24;">0</div>
+          <div class="hw-stat-lbl">In Progress</div>
+        </div>
+        <div class="hw-stat-box">
+          <div class="hw-stat-val" id="hwStatDone" style="color: #34d399;">0</div>
+          <div class="hw-stat-lbl">Completed</div>
+        </div>
+      </div>
+
+      <!-- Subject & Status Filter -->
+      <div class="card-filter-row">
+        <select class="form-control" id="homeworkSubjectFilter" style="padding: 4px 8px; font-size: 0.78rem; max-width: 140px;">
+          <option value="ALL">All Subjects</option>
+        </select>
+        <div class="filter-pills" id="hwStatusPills">
+          <button class="filter-pill active" data-status="ALL">All</button>
+          <button class="filter-pill" data-status="In Progress">Active</button>
+          <button class="filter-pill" data-status="Not Started">Pending</button>
+          <button class="filter-pill" data-status="Completed">Done</button>
+        </div>
+      </div>
+
+      <!-- Homework List (Each card features Mark as Done Checkbox + Button) -->
+      <div class="card-content" id="homeworkListContainer">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- Section 2: Interactive Tasks (Strictly Non-School Tasks) -->
+    <section class="dash-card">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon">⚡</span>
+          <div>
+            <h2>Personal &amp; Non-School Tasks</h2>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Habits, Errands, Projects &amp; Focus Blocks</span>
+          </div>
+        </div>
+        <div class="tabs-bar" id="todoViewTabs" style="max-width: 250px;">
+          <button class="tab-btn active" data-view="Today">Today</button>
+          <button class="tab-btn" data-view="Upcoming">Upcoming</button>
+          <button class="tab-btn" data-view="Completed">Done</button>
+          <button class="tab-btn" data-view="All">All</button>
+        </div>
+      </div>
+
+      <!-- Quick Add Input -->
+      <div class="todo-quick-add">
+        <input type="text" 
+               class="todo-add-input" 
+               id="quickTodoInput" 
+               placeholder="Add non-school task (press Enter)..." 
+               onkeydown="quickAddTodo(event)">
+        <button class="btn-primary" onclick="quickAddTodo()">Add</button>
+      </div>
+
+      <!-- Non-School Tag Filters -->
+      <div class="card-filter-row">
+        <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 600;">TAGS:</span>
+        <div class="filter-pills" id="todoTagPills">
+          <button class="filter-pill active" data-tag="ALL">All Tags</button>
+          <button class="filter-pill" data-tag="Personal">Personal</button>
+          <button class="filter-pill" data-tag="Projects">Projects</button>
+          <button class="filter-pill" data-tag="Fitness">Fitness</button>
+          <button class="filter-pill" data-tag="Errands">Errands</button>
+        </div>
+      </div>
+
+      <!-- Non-School To-Do List (Drag & Drop Reorderable) -->
+      <div class="card-content" id="todoListContainer">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- Section 3: Daily Briefing & News Feed -->
+    <section class="dash-card news-section">
+      <div class="card-header">
+        <div class="card-title-group">
+          <span class="card-icon">🌐</span>
+          <div>
+            <h2>Daily Briefing</h2>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Curated Global Intelligence</span>
+          </div>
+        </div>
+        <div class="tabs-bar" id="newsTabs" style="max-width: 240px;">
+          <button class="tab-btn active" data-tab="world">World News</button>
+          <button class="tab-btn" data-tab="tech">AI &amp; Tech</button>
+        </div>
+        <button class="btn-secondary" id="refreshNewsBtn" onclick="refreshNews()" title="Refresh latest news">
+          <span class="refresh-icon">🔄</span> Refresh
+        </button>
+      </div>
+
+      <!-- Search in News -->
+      <div class="card-filter-row">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="search-input" id="newsSearchInput" placeholder="Filter headlines or topics...">
+        </div>
+      </div>
+
+      <!-- News Feed Container -->
+      <div class="card-content" id="newsFeedContainer">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Modal: Add / Edit Homework -->
+  <div class="modal-overlay" id="homeworkModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="hwModalTitle">Add Calendar Assignment</h3>
+        <button class="btn-mini" onclick="closeHomeworkModal()">✕</button>
+      </div>
+      <form onsubmit="saveHomeworkForm(event)">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="hwSubjectInput">Subject / Class Name</label>
+            <input type="text" id="hwSubjectInput" class="form-control" placeholder="e.g. A.P. Government, STEM Honors Chem..." required>
+          </div>
+          <div class="form-group">
+            <label for="hwTitleInput">Assignment Title</label>
+            <input type="text" id="hwTitleInput" class="form-control" placeholder="e.g. Chapter 4 Problem Set" required>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hwDueDateInput">Due Date</label>
+              <input type="date" id="hwDueDateInput" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="hwDueTimeInput">Due Time</label>
+              <input type="time" id="hwDueTimeInput" class="form-control" value="23:59">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="hwPriorityInput">Priority</label>
+              <select id="hwPriorityInput" class="form-control">
+                <option value="High">High Priority</option>
+                <option value="Medium" selected>Medium Priority</option>
+                <option value="Low">Low Priority</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="hwStatusInput">Initial Status</label>
+              <select id="hwStatusInput" class="form-control">
+                <option value="Not Started" selected>Not Started</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeHomeworkModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Settings & Persistent Storage -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Storage &amp; Data Management</h3>
+        <button class="btn-mini" onclick="closeSettingsModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-muted);">
+          All tasks, homework assignments, and check-in records are automatically synchronized from your Google Calendar &amp; Tasks and stored in your browser's persistent LocalStorage.
+        </p>
+
+        <div class="form-group">
+          <label>Data Backup &amp; Portability</label>
+          <div style="display: flex; gap: 10px; margin-top: 6px;">
+            <button class="btn-secondary" onclick="exportDashboardData()">📥 Export JSON</button>
+            <label class="btn-secondary" style="cursor: pointer;">
+              📤 Import JSON
+              <input type="file" accept=".json" style="display: none;" onchange="importDashboardData(event)">
+            </label>
+          </div>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 6px 0;">
+
+        <div class="form-group">
+          <label>Re-sync with Calendar &amp; Tasks</label>
+          <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 8px;">
+            Restore your assignments and non-school tasks to the verified schedule.
+          </p>
+          <button class="btn-secondary" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);" onclick="resetAllData()">
+            🔄 Re-sync with Calendar &amp; Tasks
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-primary" onclick="closeSettingsModal()">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+/**
+ * Personal Daily Dashboard Web Application
+ * Synchronized with User's Google Calendar & Google Tasks:
+ * - School & Homework Hub: Classes from Walton High School (A.P. Gov, STEM Chem, Honors Alg II, STEM PLTW, Honors Lit)
+ *   with direct Google Calendar links and quick "Mark as Done" checkbox & button.
+ * - Interactive Tasks: Non-school tasks, personal goals, focus time, and Google Tasks.
+ */
+
+// --- DATA STORE & STATE MANAGEMENT ---
+const STORAGE_KEYS = {
+  HOMEWORK: 'pdd_gcal_homework_v4',
+  TODOS: 'pdd_gcal_todos_v4',
+  CHECKIN: 'pdd_gcal_checkin_v4',
+  INITIALIZED: 'pdd_gcal_initialized_v4'
+};
+
+// Seed Data directly extracted from User's Google Calendars
+function getInitialHomework() {
+  return [
+    {
+      id: 'gcal-hw-01',
+      subject: 'A.P. Government',
+      title: 'H.W. #1: Watch Executive Branch Narrated PPT',
+      dueDate: '2026-10-05',
+      dueTime: '08:00',
+      priority: 'High',
+      status: 'In Progress',
+      calendarLink: 'https://www.google.com/calendar/event?eid=MDlqa3F2ZWt2MmZiOHVvY2lxdWdlc2N2cjYgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw',
+      description: 'Watch Executive Branch narrated PowerPoint on YouTube and take notes for narrated PPT quiz.'
+    },
+    {
+      id: 'gcal-hw-02',
+      subject: 'STEM Honors Chem',
+      title: 'U3 Test: Chemical Bonding & Orbitals',
+      dueDate: '2026-10-05',
+      dueTime: '14:00',
+      priority: 'High',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=NDl0dmxjdG5wYjVnNGlrdmhobmtobWhzY3AgbzRuYW5jN250OWFwZDZwaHI5cDY3MjczaWdAZw',
+      description: 'Unit 3 Comprehensive Chemistry Test covering Orbitals, Electron Configurations, and Lewis Dot Structures.'
+    },
+    {
+      id: 'gcal-hw-03',
+      subject: 'Honors Algebra II',
+      title: 'Quiz: 3 (Polynomial & Rational Expressions)',
+      dueDate: '2026-10-05',
+      dueTime: '11:00',
+      priority: 'High',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=NGU0ajh1MzBzcmF1ZDR0ajRwcnVscjc0NXEgOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn',
+      description: 'Quiz 3 in class following HW 3-4 and 3-5.'
+    },
+    {
+      id: 'gcal-hw-04',
+      subject: 'A.P. Government',
+      title: 'QUIZ: Executive Branch Narrated PPT Quiz',
+      dueDate: '2026-10-05',
+      dueTime: '13:00',
+      priority: 'High',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=MDJiN2lrdGduODZhdmQ2ODcycmMwcWJhOTkgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw',
+      description: '30-minute timed quiz on CTLS based on notes taken from the narrated PPT.'
+    },
+    {
+      id: 'gcal-hw-05',
+      subject: 'Honors Literature',
+      title: 'Read: Chapters 8-10',
+      dueDate: '2026-10-03',
+      dueTime: '23:59',
+      priority: 'Medium',
+      status: 'In Progress',
+      calendarLink: 'https://www.google.com/calendar/event?eid=NnI2bTZ1ZXAzaHZlN200aTN2cTUyZ21idTkgNzJhM2FmYTQxMWE3N2NiZDEwZTE0ZmUzYjQ4YzA1MDBlZWJjMTkxOTVhZWRkYzk3MGEyYjk3YjBjNjkxZWM2OEBn',
+      description: 'Reading assignment for Honors Literature and Composition II.'
+    },
+    {
+      id: 'gcal-hw-06',
+      subject: 'A.P. Government',
+      title: 'Student Self-Evaluation Form 2',
+      dueDate: '2026-10-05',
+      dueTime: '23:59',
+      priority: 'Medium',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=MmRuOW42YWhvY2Z2dGVqMHRsbjVjOHBqNnAgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw',
+      description: 'Complete Student Self Reporting Grading Form 2 on Microsoft Forms reflecting on unit progress.'
+    },
+    {
+      id: 'gcal-hw-07',
+      subject: 'Honors Algebra II',
+      title: 'HW: 3-5 Problem Set',
+      dueDate: '2026-10-05',
+      dueTime: '23:59',
+      priority: 'Medium',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=N2FsNTFxc2VtMmUzNmszdDJlOXIxNmVmMTEgOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn',
+      description: 'Honors Algebra II exercises 3-5.'
+    },
+    {
+      id: 'gcal-hw-08',
+      subject: 'A.P. Government',
+      title: 'H.W.: Getting to Know the Bureaucracy',
+      dueDate: '2026-10-06',
+      dueTime: '08:00',
+      priority: 'Medium',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=NTMycjQ0MXBmZzBqMDZqdm1rZWFlZGp1aGYgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw',
+      description: 'Preview Getting to Know the Federal Bureaucracy assignment & complete Roman numerals I-VI.'
+    },
+    {
+      id: 'gcal-hw-09',
+      subject: 'STEM PLTW Human Body',
+      title: 'TEST: Muscles & Musculoskeletal System',
+      dueDate: '2026-10-08',
+      dueTime: '13:00',
+      priority: 'High',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=NWNnaHRxNGowaTg3NGY4dHB0c3FkNW1hb3UgM2UxYjI0ZjFlMmEzYTViZjYwZTVmMzQxZTMyNjZiMzc1NzFlMGQzYjdmYTQwNzFlZWQ4YTA1YzE0MWUwNDVkOEBn',
+      description: 'Major Unit Exam on Muscle identification, structure, contraction mechanism, and pathologies.'
+    },
+    {
+      id: 'gcal-hw-10',
+      subject: 'Honors Algebra II',
+      title: 'TEST: Unit 3 Comprehensive',
+      dueDate: '2026-10-09',
+      dueTime: '12:00',
+      priority: 'High',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=MnBzbmk0Z3ZmbXNoMjdqYTRlaTF2czkwdTUgOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn',
+      description: 'Unit 3 Test covering all quadratic and polynomial sections.'
+    },
+    {
+      id: 'gcal-hw-11',
+      subject: 'Honors Literature',
+      title: 'Vocab: Wordup & Quiz',
+      dueDate: '2026-10-08',
+      dueTime: '10:00',
+      priority: 'Medium',
+      status: 'Not Started',
+      calendarLink: 'https://www.google.com/calendar/event?eid=NWY0NXJlZWhoMjUxcnM3aGFyZDFyZnRwYnQgNzJhM2FmYTQxMWE3N2NiZDEwZTE0ZmUzYjQ4YzA1MDBlZWJjMTkxOTVhZWRkYzk3MGEyYjk3YjBjNjkxZWM2OEBn',
+      description: 'Wordup vocabulary exercises and in-class vocab assessment.'
+    },
+    {
+      id: 'gcal-hw-12',
+      subject: 'Honors Algebra II',
+      title: 'HW: 3-4 Problem Set',
+      dueDate: '2026-10-02',
+      dueTime: '23:59',
+      priority: 'Low',
+      status: 'Completed',
+      calendarLink: 'https://www.google.com/calendar/event?eid=MGFlZ2lvZ2gzMGk0aG1kYnRjYTk2MjJmb3YgOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn',
+      description: 'Honors Algebra II homework assignment 3-4.'
+    }
+  ];
+}
+
+// Seed Tasks: Strictly Non-School Tasks (Personal, Projects, Fitness, Google Tasks, Routines)
+function getInitialTodos() {
+  return [
+    {
+      id: 'todo-non-01',
+      title: 'Submit membership application',
+      tag: 'Personal',
+      dueDate: '2026-10-03',
+      completed: false,
+      order: 0,
+      link: 'https://tasks.google.com/task/Qtqan0wMPHMbIdiS?sa=DLSA_GEMINI'
+    },
+    {
+      id: 'todo-non-02',
+      title: 'Take out the trash & recycling bins',
+      tag: 'Errands',
+      dueDate: '2026-10-03',
+      completed: false,
+      order: 1,
+      link: 'https://tasks.google.com/task/jK531gYR5ghgn4gS?sa=DLSA_GEMINI'
+    },
+    {
+      id: 'todo-non-03',
+      title: 'Review Generative AI Mastermind meeting takeaways & action items',
+      tag: 'Projects',
+      dueDate: '2026-10-03',
+      completed: true,
+      order: 2,
+      link: 'https://www.google.com/calendar/event?eid=YzBpZDliNjllc2c1c2FlbTJ1Y285cmZpcXMgYWJoZWVra2FqYUBt'
+    },
+    {
+      id: 'todo-non-04',
+      title: '30-minute afternoon cardio & mobility stretch session',
+      tag: 'Fitness',
+      dueDate: '2026-10-03',
+      completed: false,
+      order: 3
+    },
+    {
+      id: 'todo-non-05',
+      title: 'Prepare quiet workspace agenda for 🎯 Focus Time (8:00 AM - 2:00 PM)',
+      tag: 'Personal',
+      dueDate: '2026-10-04',
+      completed: false,
+      order: 4,
+      link: 'https://www.google.com/calendar/event?eid=cmVjbGFpbTBmb2N1czBvMDIwbzAzMDE5MTU2MG8wMjAyNjEwMDUwbzA1NjE2MDQwbzAwMG8wNzk3MDk3ODY1IGFiaGVla2thamFAbQ'
+    },
+    {
+      id: 'todo-non-06',
+      title: 'Review monthly cloud services & software subscription invoices',
+      tag: 'Personal',
+      dueDate: '2026-10-05',
+      completed: false,
+      order: 5
+    },
+    {
+      id: 'todo-non-07',
+      title: 'Backup Git repositories & organize development sandbox folders',
+      tag: 'Projects',
+      dueDate: '2026-10-06',
+      completed: false,
+      order: 6
+    },
+    {
+      id: 'todo-non-08',
+      title: 'Clean desk workspace & organize charging cables',
+      tag: 'Errands',
+      dueDate: '2026-10-03',
+      completed: true,
+      order: 7
+    }
+  ];
+}
+
+class DashboardStore {
+  constructor() {
+    this.init();
+  }
+
+  init() {
+    if (!localStorage.getItem(STORAGE_KEYS.INITIALIZED)) {
+      this.saveHomework(getInitialHomework());
+      this.saveTodos(getInitialTodos());
+      this.saveCheckin({
+        streak: 5,
+        lastCheckinDate: '2026-10-03',
+        totalCheckins: 15
+      });
+      localStorage.setItem(STORAGE_KEYS.INITIALIZED, 'true');
+    }
+  }
+
+  getHomework() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.HOMEWORK);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('Failed to load homework from storage', e);
+      return [];
+    }
+  }
+
+  saveHomework(homework) {
+    localStorage.setItem(STORAGE_KEYS.HOMEWORK, JSON.stringify(homework));
+  }
+
+  getTodos() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.TODOS);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      console.error('Failed to load todos from storage', e);
+      return [];
+    }
+  }
+
+  saveTodos(todos) {
+    localStorage.setItem(STORAGE_KEYS.TODOS, JSON.stringify(todos));
+  }
+
+  getCheckin() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.CHECKIN);
+      return data ? JSON.parse(data) : { streak: 1, lastCheckinDate: '', totalCheckins: 1 };
+    } catch (e) {
+      return { streak: 1, lastCheckinDate: '', totalCheckins: 1 };
+    }
+  }
+
+  saveCheckin(checkin) {
+    localStorage.setItem(STORAGE_KEYS.CHECKIN, JSON.stringify(checkin));
+  }
+
+  resetDefaults() {
+    localStorage.removeItem(STORAGE_KEYS.INITIALIZED);
+    this.init();
+  }
+
+  exportData() {
+    return {
+      homework: this.getHomework(),
+      todos: this.getTodos(),
+      checkin: this.getCheckin(),
+      exportedAt: new Date().toISOString()
+    };
+  }
+
+  importData(data) {
+    if (data.homework && Array.isArray(data.homework)) {
+      this.saveHomework(data.homework);
+    }
+    if (data.todos && Array.isArray(data.todos)) {
+      this.saveTodos(data.todos);
+    }
+    if (data.checkin) {
+      this.saveCheckin(data.checkin);
+    }
+  }
+}
+
+const store = new DashboardStore();
+
+// --- LIVE DATE & TIME HEADER ---
+function initHeader() {
+  const clockEl = document.getElementById('liveClock');
+  const dateEl = document.getElementById('dateDisplay');
+
+  function updateClock() {
+    const now = new Date();
+    let hours = now.getHours();
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    
+    if (clockEl) {
+      clockEl.textContent = `${hours}:${minutes}:${seconds} ${ampm}`;
+    }
+
+    if (dateEl) {
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      dateEl.textContent = now.toLocaleDateString('en-US', options);
+    }
+  }
+
+  updateClock();
+  setInterval(updateClock, 1000);
+}
+
+// --- MOTIVATIONAL PROGRESS & CHECK-IN ---
+function updateProgressAndMotivation() {
+  const todos = store.getTodos();
+  const homework = store.getHomework();
+  const checkin = store.getCheckin();
+
+  const totalTodos = todos.length;
+  const completedTodos = todos.filter(t => t.completed).length;
+
+  const totalHw = homework.length;
+  const completedHw = homework.filter(h => h.status === 'Completed').length;
+
+  const totalItems = totalTodos + totalHw;
+  const totalCompleted = completedTodos + completedHw;
+  const percentage = totalItems > 0 ? Math.round((totalCompleted / totalItems) * 100) : 0;
+
+  const fillEl = document.getElementById('progressBarFill');
+  const statsEl = document.getElementById('progressStatsText');
+  const quoteEl = document.getElementById('motivationText');
+  const streakEl = document.getElementById('streakCount');
+
+  if (fillEl) fillEl.style.width = `${percentage}%`;
+  if (statsEl) {
+    statsEl.textContent = `${totalCompleted} of ${totalItems} total items finished (${percentage}%) • [${completedHw}/${totalHw} assignments, ${completedTodos}/${totalTodos} tasks]`;
+  }
+
+  let quote = "Ready to conquer today's goals! Pick your first win.";
+  if (percentage === 100) {
+    quote = "Outstanding! Everything on your dashboard is finished! 🎉";
+  } else if (percentage >= 75) {
+    quote = "Fantastic momentum! The finish line is within sight.";
+  } else if (percentage >= 50) {
+    quote = "Over halfway through! Maintain your steady pace.";
+  } else if (percentage >= 25) {
+    quote = "Good progress underway! Keep knocking out priorities.";
+  }
+
+  if (quoteEl) quoteEl.textContent = quote;
+  if (streakEl) streakEl.textContent = `${checkin.streak} Day Streak`;
+}
+
+function handleCheckinClick() {
+  const checkin = store.getCheckin();
+  const today = new Date().toISOString().split('T')[0];
+
+  if (checkin.lastCheckinDate === today) {
+    showToast('Already checked in for today! Keep up the great work! ✨', 'info');
+    return;
+  }
+
+  checkin.streak += 1;
+  checkin.lastCheckinDate = today;
+  checkin.totalCheckins += 1;
+  store.saveCheckin(checkin);
+
+  updateProgressAndMotivation();
+  showToast(`Checked in! Current streak: ${checkin.streak} days 🔥`, 'success');
+}
+
+// --- NEWS FEED MODULE ---
+const NEWS_DATA = {
+  world: [
+    {
+      title: "Global Clean Energy Summit Finalizes Accord on Next-Gen Grid Integration",
+      summary: "International energy delegates reached a landmark consensus to accelerate deployment of high-voltage transmission corridors and smart decentralized storage across four continents.",
+      source: "Reuters",
+      link: "https://www.reuters.com",
+      time: "2 hours ago"
+    },
+    {
+      title: "Artemis Lunar Gateway Assembly Prepares for Next Phase Launch",
+      summary: "Space exploration agencies have scheduled the upcoming orbital integration tests for the human-rated lunar outpost, clearing essential safety milestones.",
+      source: "BBC World",
+      link: "https://www.bbc.com/news",
+      time: "4 hours ago"
+    },
+    {
+      title: "Breakthrough in Water Desalination Efficiency Cuts Energy Footprint by 40%",
+      summary: "Engineers have unveiled a novel graphene-oxide biomimetic membrane capable of continuous desalination with dramatically reduced thermal overhead and biofouling resistance.",
+      source: "Associated Press",
+      link: "https://apnews.com",
+      time: "6 hours ago"
+    },
+    {
+      title: "Urban Reforestation Initiatives Show Measurable Cooling Across 50 Major Metros",
+      summary: "A multi-year satellite thermal survey confirms that targeted urban tree canopies and micro-parks lowered street-level peak summer temperatures by up to 3.2°C.",
+      source: "Nature Climate",
+      link: "https://www.nature.com",
+      time: "8 hours ago"
+    }
+  ],
+  tech: [
+    {
+      title: "Next-Generation Multimodal AI Agents Demonstrate Real-Time Long-Horizon Planning",
+      summary: "New benchmarks reveal autonomous reasoning systems executing hundreds of coordinated tool interactions without context degradation, transforming automated research.",
+      source: "MIT Tech Review",
+      link: "https://www.technologyreview.com",
+      time: "1 hour ago"
+    },
+    {
+      title: "Commercial Quantum Processors Surpass 1,000 Logical Qubits with Error Correction",
+      summary: "Hardware researchers have verified fault-tolerant surface codes maintaining sub-nanosecond syndrome detection, advancing simulation of complex chemical catalysts.",
+      source: "Ars Technica",
+      link: "https://arstechnica.com",
+      time: "3 hours ago"
+    },
+    {
+      title: "Open Source AI Consortium Releases Ultra-Fast 1-Bit Weight Quantization Standards",
+      summary: "Developers can now run frontier-class 70B parameter reasoning models locally on edge laptops with sub-10W power draw and near-zero perplexity loss.",
+      source: "Hacker News",
+      link: "https://news.ycombinator.com",
+      time: "5 hours ago"
+    },
+    {
+      title: "Solid-State Silicon Anode Battery Technology Enters Automotive Fleet Testing",
+      summary: "Extensive test track results show 800-mile real-world highway range with 10-minute ultra-fast charging and exceptional thermal stability across temperature extremes.",
+      source: "TechCrunch",
+      link: "https://techcrunch.com",
+      time: "7 hours ago"
+    }
+  ]
+};
+
+let currentNewsTab = 'world';
+let newsSearchQuery = '';
+
+function renderNews() {
+  const container = document.getElementById('newsFeedContainer');
+  if (!container) return;
+
+  const items = NEWS_DATA[currentNewsTab] || [];
+  const filtered = items.filter(item => {
+    if (!newsSearchQuery) return true;
+    const q = newsSearchQuery.toLowerCase();
+    return item.title.toLowerCase().includes(q) || item.summary.toLowerCase().includes(q) || item.source.toLowerCase().includes(q);
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📰</div>
+        <p>No headlines found matching "${escapeHtml(newsSearchQuery)}".</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => `
+    <article class="news-item">
+      <div class="news-meta">
+        <span class="news-source-tag">${escapeHtml(item.source)}</span>
+        <span class="news-time">${escapeHtml(item.time)}</span>
+      </div>
+      <h3 class="news-title">${escapeHtml(item.title)}</h3>
+      <p class="news-summary">${escapeHtml(item.summary)}</p>
+      <div class="news-link-row">
+        <a href="${item.link}" target="_blank" rel="noopener noreferrer" class="news-link">
+          Read Full Story ↗
+        </a>
+      </div>
+    </article>
+  `).join('');
+}
+
+function switchNewsTab(tab) {
+  currentNewsTab = tab;
+  document.querySelectorAll('#newsTabs .tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  renderNews();
+}
+
+function refreshNews() {
+  const refreshBtn = document.getElementById('refreshNewsBtn');
+  const icon = refreshBtn?.querySelector('.refresh-icon');
+  if (icon) icon.classList.add('refresh-spin');
+
+  fetch('https://hacker-news.firebaseio.com/v0/topstories.json?limitToFirst=5&orderBy="$key"')
+    .then(res => res.json())
+    .then(async (ids) => {
+      if (Array.isArray(ids) && ids.length > 0) {
+        const top5 = ids.slice(0, 4);
+        const storyPromises = top5.map(id => 
+          fetch(`https://hacker-news.firebaseio.com/v0/item/${id}.json`).then(r => r.json())
+        );
+        const stories = await Promise.all(storyPromises);
+        const liveHN = stories.filter(s => s && s.title).map(s => ({
+          title: s.title,
+          summary: `Discussion with ${s.score || 0} points and ${s.descendants || 0} comments on Hacker News.`,
+          source: 'Hacker News Live',
+          link: s.url || `https://news.ycombinator.com/item?id=${s.id}`,
+          time: 'Just now'
+        }));
+        if (liveHN.length > 0) {
+          NEWS_DATA.tech = liveHN;
+        }
+      }
+    })
+    .catch(() => {
+      const list = NEWS_DATA[currentNewsTab];
+      if (list && list.length > 0) {
+        list[0].time = 'Just refreshed';
+      }
+    })
+    .finally(() => {
+      setTimeout(() => {
+        if (icon) icon.classList.remove('refresh-spin');
+        renderNews();
+        showToast('Headlines updated successfully!', 'success');
+      }, 600);
+    });
+}
+
+// --- SCHOOL & HOMEWORK HUB MODULE ---
+let homeworkFilterSubject = 'ALL';
+let homeworkFilterStatus = 'ALL';
+
+function calculateDueDetails(dueDateStr, dueTimeStr) {
+  const now = new Date();
+  const time = dueTimeStr || '23:59';
+  const dueDateTime = new Date(`${dueDateStr}T${time}:00`);
+  const diffMs = dueDateTime.getTime() - now.getTime();
+  const diffHours = diffMs / (1000 * 3600);
+
+  let badgeClass = 'normal';
+  let badgeText = '';
+  let isUrgent24h = false;
+  let isUrgent48h = false;
+
+  if (diffMs < 0) {
+    badgeClass = 'overdue';
+    badgeText = '⚠️ Overdue';
+  } else if (diffHours <= 24) {
+    badgeClass = 'urgent';
+    isUrgent24h = true;
+    const hours = Math.floor(diffHours);
+    const mins = Math.floor((diffHours - hours) * 60);
+    badgeText = `🔥 Due in ${hours}h ${mins}m`;
+  } else if (diffHours <= 48) {
+    badgeClass = 'warning';
+    isUrgent48h = true;
+    const hours = Math.floor(diffHours);
+    badgeText = `⏳ Due in ~${hours}h`;
+  } else {
+    const days = Math.ceil(diffHours / 24);
+    badgeText = `📅 Due in ${days} days`;
+  }
+
+  return {
+    badgeClass,
+    badgeText,
+    isUrgent24h,
+    isUrgent48h,
+    diffMs
+  };
+}
+
+function getSubjectBadgeClass(subject) {
+  const sub = (subject || '').toLowerCase();
+  if (sub.includes('math') || sub.includes('algebra') || sub.includes('calc')) return 'subject-math';
+  if (sub.includes('chem') || sub.includes('science')) return 'subject-cs';
+  if (sub.includes('pltw') || sub.includes('body') || sub.includes('phys')) return 'subject-physics';
+  if (sub.includes('gov') || sub.includes('history')) return 'subject-history';
+  if (sub.includes('lit') || sub.includes('comp') || sub.includes('english')) return 'subject-english';
+  return 'subject-math';
+}
+
+function toggleHomeworkDone(id) {
+  const homework = store.getHomework();
+  const item = homework.find(h => h.id === id);
+  if (item) {
+    if (item.status === 'Completed') {
+      item.status = 'In Progress';
+      showToast(`Reopened "${item.title}"`, 'info');
+    } else {
+      item.status = 'Completed';
+      showToast(`Marked "${item.title}" as completed! 🎉`, 'success');
+    }
+    store.saveHomework(homework);
+    renderHomework();
+    updateProgressAndMotivation();
+  }
+}
+
+function renderHomework() {
+  const container = document.getElementById('homeworkListContainer');
+  if (!container) return;
+
+  const homework = store.getHomework();
+
+  // Update Stats
+  const urgentCount = homework.filter(h => {
+    if (h.status === 'Completed') return false;
+    const due = calculateDueDetails(h.dueDate, h.dueTime);
+    return due.isUrgent24h || due.isUrgent48h;
+  }).length;
+  
+  const inProgressCount = homework.filter(h => h.status === 'In Progress').length;
+  const completedCount = homework.filter(h => h.status === 'Completed').length;
+
+  const statUrgentEl = document.getElementById('hwStatUrgent');
+  const statProgressEl = document.getElementById('hwStatProgress');
+  const statDoneEl = document.getElementById('hwStatDone');
+
+  if (statUrgentEl) statUrgentEl.textContent = urgentCount;
+  if (statProgressEl) statProgressEl.textContent = inProgressCount;
+  if (statDoneEl) statDoneEl.textContent = completedCount;
+
+  // Filter items
+  let filtered = homework.filter(item => {
+    if (homeworkFilterSubject !== 'ALL' && item.subject !== homeworkFilterSubject) {
+      return false;
+    }
+    if (homeworkFilterStatus !== 'ALL' && item.status !== homeworkFilterStatus) {
+      return false;
+    }
+    return true;
+  });
+
+  // Sort: Overdue & urgent first, then by date, completed at the end
+  filtered.sort((a, b) => {
+    if (a.status === 'Completed' && b.status !== 'Completed') return 1;
+    if (a.status !== 'Completed' && b.status === 'Completed') return -1;
+    const aTime = new Date(`${a.dueDate}T${a.dueTime || '23:59'}:00`).getTime();
+    const bTime = new Date(`${b.dueDate}T${b.dueTime || '23:59'}:00`).getTime();
+    return aTime - bTime;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">📚</div>
+        <p>No calendar assignments found for this filter.</p>
+        <button class="btn-secondary" onclick="openAddHomeworkModal()">+ Add New Assignment</button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => {
+    const dueInfo = calculateDueDetails(item.dueDate, item.dueTime);
+    const isCompleted = item.status === 'Completed';
+    const urgentClass = !isCompleted ? (dueInfo.isUrgent24h ? 'urgent-24h' : (dueInfo.isUrgent48h ? 'urgent-48h' : '')) : '';
+    const subjectClass = getSubjectBadgeClass(item.subject);
+    const priorityClass = `priority-${item.priority.toLowerCase()}`;
+
+    return `
+      <div class="homework-card-item ${urgentClass} ${isCompleted ? 'is-completed' : ''}" data-id="${item.id}">
+        <div class="homework-top-row">
+          <div class="hw-header-left">
+            <input type="checkbox" 
+                   class="hw-checkbox" 
+                   ${isCompleted ? 'checked' : ''} 
+                   onchange="toggleHomeworkDone('${item.id}')"
+                   title="${isCompleted ? 'Mark as not done' : 'Mark as done'}">
+            <span class="subject-badge ${subjectClass}">${escapeHtml(item.subject)}</span>
+          </div>
+          <span class="countdown-badge ${dueInfo.badgeClass}">
+            ${dueInfo.badgeText}
+          </span>
+        </div>
+        <div class="homework-title" style="cursor: pointer;" onclick="toggleHomeworkDone('${item.id}')" title="Click to toggle done">
+          ${escapeHtml(item.title)}
+        </div>
+        ${item.description ? `<p style="font-size: 0.78rem; color: var(--text-dim); line-height: 1.35;">${escapeHtml(item.description)}</p>` : ''}
+        <div class="homework-footer">
+          <div class="hw-meta-badges">
+            <button class="btn-mark-done ${isCompleted ? 'is-completed' : ''}" onclick="toggleHomeworkDone('${item.id}')">
+              ${isCompleted ? '✓ Done' : 'Mark Done'}
+            </button>
+            <span class="priority-badge ${priorityClass}">${item.priority}</span>
+            <select class="status-select" onchange="changeHomeworkStatus('${item.id}', this.value)">
+              <option value="Not Started" ${item.status === 'Not Started' ? 'selected' : ''}>Not Started</option>
+              <option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option value="Completed" ${item.status === 'Completed' ? 'selected' : ''}>Completed</option>
+            </select>
+            ${item.calendarLink ? `
+              <a href="${item.calendarLink}" target="_blank" rel="noopener noreferrer" style="font-size: 0.72rem; color: var(--cyan); text-decoration: none; display: inline-flex; align-items: center; gap: 3px;" title="Open in Google Calendar">
+                📅 Calendar ↗
+              </a>
+            ` : ''}
+          </div>
+          <div class="hw-actions">
+            <button class="btn-mini" title="Edit" onclick="openEditHomeworkModal('${item.id}')">✏️</button>
+            <button class="btn-mini danger" title="Delete" onclick="deleteHomework('${item.id}')">🗑️</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function updateSubjectDropdown() {
+  const homework = store.getHomework();
+  const subjects = Array.from(new Set(homework.map(h => h.subject))).filter(Boolean);
+  const select = document.getElementById('homeworkSubjectFilter');
+  if (!select) return;
+
+  const currentVal = select.value;
+  select.innerHTML = '<option value="ALL">All Subjects</option>' + 
+    subjects.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+  
+  if (subjects.includes(currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+function changeHomeworkStatus(id, newStatus) {
+  const homework = store.getHomework();
+  const item = homework.find(h => h.id === id);
+  if (item) {
+    item.status = newStatus;
+    store.saveHomework(homework);
+    renderHomework();
+    updateProgressAndMotivation();
+    showToast(`Updated "${item.title}" to ${newStatus}`, 'info');
+  }
+}
+
+function deleteHomework(id) {
+  if (!confirm('Are you sure you want to delete this assignment?')) return;
+  let homework = store.getHomework();
+  homework = homework.filter(h => h.id !== id);
+  store.saveHomework(homework);
+  renderHomework();
+  updateSubjectDropdown();
+  updateProgressAndMotivation();
+  showToast('Assignment removed', 'info');
+}
+
+// Modal logic for Homework
+let editingHomeworkId = null;
+
+function openAddHomeworkModal() {
+  editingHomeworkId = null;
+  document.getElementById('hwModalTitle').textContent = 'Add Calendar Assignment';
+  document.getElementById('hwSubjectInput').value = '';
+  document.getElementById('hwTitleInput').value = '';
+  
+  const tomorrow = new Date(Date.now() + 86400 * 1000);
+  document.getElementById('hwDueDateInput').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('hwDueTimeInput').value = '23:59';
+  document.getElementById('hwPriorityInput').value = 'Medium';
+  document.getElementById('hwStatusInput').value = 'Not Started';
+
+  document.getElementById('homeworkModal').classList.add('active');
+}
+
+function openEditHomeworkModal(id) {
+  const homework = store.getHomework();
+  const item = homework.find(h => h.id === id);
+  if (!item) return;
+
+  editingHomeworkId = id;
+  document.getElementById('hwModalTitle').textContent = 'Edit Assignment';
+  document.getElementById('hwSubjectInput').value = item.subject;
+  document.getElementById('hwTitleInput').value = item.title;
+  document.getElementById('hwDueDateInput').value = item.dueDate;
+  document.getElementById('hwDueTimeInput').value = item.dueTime || '23:59';
+  document.getElementById('hwPriorityInput').value = item.priority;
+  document.getElementById('hwStatusInput').value = item.status;
+
+  document.getElementById('homeworkModal').classList.add('active');
+}
+
+function closeHomeworkModal() {
+  document.getElementById('homeworkModal').classList.remove('active');
+  editingHomeworkId = null;
+}
+
+function saveHomeworkForm(e) {
+  e.preventDefault();
+  const subject = document.getElementById('hwSubjectInput').value.trim();
+  const title = document.getElementById('hwTitleInput').value.trim();
+  const dueDate = document.getElementById('hwDueDateInput').value;
+  const dueTime = document.getElementById('hwDueTimeInput').value || '23:59';
+  const priority = document.getElementById('hwPriorityInput').value;
+  const status = document.getElementById('hwStatusInput').value;
+
+  if (!subject || !title || !dueDate) {
+    showToast('Please fill in Subject, Title, and Due Date', 'info');
+    return;
+  }
+
+  const homework = store.getHomework();
+
+  if (editingHomeworkId) {
+    const item = homework.find(h => h.id === editingHomeworkId);
+    if (item) {
+      item.subject = subject;
+      item.title = title;
+      item.dueDate = dueDate;
+      item.dueTime = dueTime;
+      item.priority = priority;
+      item.status = status;
+    }
+  } else {
+    homework.push({
+      id: 'hw-' + Date.now(),
+      subject,
+      title,
+      dueDate,
+      dueTime,
+      priority,
+      status,
+      calendarLink: 'https://calendar.google.com',
+      createdAt: new Date().toISOString()
+    });
+  }
+
+  store.saveHomework(homework);
+  closeHomeworkModal();
+  renderHomework();
+  updateSubjectDropdown();
+  updateProgressAndMotivation();
+  showToast(editingHomeworkId ? 'Assignment updated!' : 'Assignment created!', 'success');
+}
+
+// --- INTERACTIVE TO-DO LIST MODULE (NON-SCHOOL TASKS) ---
+let todoFilterView = 'Today';
+let todoFilterTag = 'ALL';
+
+function renderTodos() {
+  const container = document.getElementById('todoListContainer');
+  if (!container) return;
+
+  const todos = store.getTodos();
+  const todayStr = new Date().toISOString().split('T')[0];
+
+  todos.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+  let filtered = todos.filter(item => {
+    if (todoFilterTag !== 'ALL' && item.tag !== todoFilterTag) {
+      return false;
+    }
+
+    if (todoFilterView === 'Today') {
+      return !item.completed && (item.dueDate === todayStr || !item.dueDate);
+    } else if (todoFilterView === 'Upcoming') {
+      return !item.completed && item.dueDate > todayStr;
+    } else if (todoFilterView === 'Completed') {
+      return item.completed;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-state-icon">✅</div>
+        <p>No non-school tasks in "${todoFilterView}".</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = filtered.map(item => {
+    const isToday = item.dueDate === todayStr;
+    const tagClass = `tag-${(item.tag || 'general').toLowerCase()}`;
+
+    return `
+      <div class="todo-item ${item.completed ? 'completed' : ''}" 
+           draggable="true" 
+           data-id="${item.id}">
+        <span class="todo-drag-handle" title="Drag to reorder">⋮⋮</span>
+        <input type="checkbox" 
+               class="todo-checkbox" 
+               ${item.completed ? 'checked' : ''} 
+               onchange="toggleTodoComplete('${item.id}')"
+               title="Mark complete">
+        <div class="todo-body" ondblclick="enableInlineEdit('${item.id}')">
+          <div class="todo-title" id="todo-text-${item.id}">${escapeHtml(item.title)}</div>
+          <div class="todo-details-row">
+            <span class="tag-badge ${tagClass}">${escapeHtml(item.tag || 'Personal')}</span>
+            ${item.dueDate ? `<span class="todo-due-date ${isToday ? 'is-today' : ''}">📅 ${item.dueDate === todayStr ? 'Today' : item.dueDate}</span>` : ''}
+            ${item.link ? `
+              <a href="${item.link}" target="_blank" rel="noopener noreferrer" style="color: var(--cyan); text-decoration: none;" title="View Source Item">
+                Source ↗
+              </a>
+            ` : ''}
+          </div>
+        </div>
+        <button class="btn-mini" title="Edit task" onclick="enableInlineEdit('${item.id}')">✏️</button>
+        <button class="btn-mini danger" title="Delete task" onclick="deleteTodo('${item.id}')">🗑️</button>
+      </div>
+    `;
+  }).join('');
+
+  setupDragAndDrop();
+}
+
+function quickAddTodo(e) {
+  if (e && e.key && e.key !== 'Enter') return;
+  const input = document.getElementById('quickTodoInput');
+  const title = input.value.trim();
+  if (!title) return;
+
+  const todos = store.getTodos();
+  const todayStr = new Date().toISOString().split('T')[0];
+  const activeTag = todoFilterTag !== 'ALL' ? todoFilterTag : 'Personal';
+
+  todos.unshift({
+    id: 'todo-' + Date.now(),
+    title,
+    tag: activeTag,
+    dueDate: todayStr,
+    completed: false,
+    order: todos.length ? Math.min(...todos.map(t => t.order || 0)) - 1 : 0,
+    createdAt: new Date().toISOString()
+  });
+
+  store.saveTodos(todos);
+  input.value = '';
+  renderTodos();
+  updateProgressAndMotivation();
+  showToast('Personal task added!', 'success');
+}
+
+function toggleTodoComplete(id) {
+  const todos = store.getTodos();
+  const item = todos.find(t => t.id === id);
+  if (item) {
+    item.completed = !item.completed;
+    store.saveTodos(todos);
+    renderTodos();
+    updateProgressAndMotivation();
+  }
+}
+
+function deleteTodo(id) {
+  let todos = store.getTodos();
+  todos = todos.filter(t => t.id !== id);
+  store.saveTodos(todos);
+  renderTodos();
+  updateProgressAndMotivation();
+  showToast('Task deleted', 'info');
+}
+
+// Inline editing capability
+function enableInlineEdit(id) {
+  const textEl = document.getElementById(`todo-text-${id}`);
+  if (!textEl || textEl.querySelector('input')) return;
+
+  const currentText = textEl.textContent.trim();
+  textEl.innerHTML = `<input type="text" class="todo-inline-input" value="${escapeHtml(currentText)}" />`;
+  const input = textEl.querySelector('input');
+  input.focus();
+  input.select();
+
+  function commitEdit() {
+    const newText = input.value.trim();
+    if (newText && newText !== currentText) {
+      const todos = store.getTodos();
+      const item = todos.find(t => t.id === id);
+      if (item) {
+        item.title = newText;
+        store.saveTodos(todos);
+      }
+    }
+    renderTodos();
+  }
+
+  input.addEventListener('blur', commitEdit);
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      input.blur();
+    } else if (e.key === 'Escape') {
+      renderTodos();
+    }
+  });
+}
+
+// HTML5 Drag to Reorder
+function setupDragAndDrop() {
+  const container = document.getElementById('todoListContainer');
+  if (!container) return;
+
+  const items = container.querySelectorAll('.todo-item');
+  let draggedItem = null;
+
+  items.forEach(item => {
+    item.addEventListener('dragstart', (e) => {
+      draggedItem = item;
+      setTimeout(() => item.classList.add('dragging'), 0);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', item.dataset.id);
+    });
+
+    item.addEventListener('dragend', () => {
+      if (draggedItem) draggedItem.classList.remove('dragging');
+      draggedItem = null;
+      items.forEach(i => i.classList.remove('drag-over'));
+    });
+
+    item.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      if (item !== draggedItem) {
+        item.classList.add('drag-over');
+      }
+    });
+
+    item.addEventListener('dragleave', () => {
+      item.classList.remove('drag-over');
+    });
+
+    item.addEventListener('drop', (e) => {
+      e.preventDefault();
+      item.classList.remove('drag-over');
+      if (!draggedItem || draggedItem === item) return;
+
+      const sourceId = draggedItem.dataset.id;
+      const targetId = item.dataset.id;
+
+      const todos = store.getTodos();
+      const sourceIndex = todos.findIndex(t => t.id === sourceId);
+      const targetIndex = todos.findIndex(t => t.id === targetId);
+
+      if (sourceIndex > -1 && targetIndex > -1) {
+        const [moved] = todos.splice(sourceIndex, 1);
+        todos.splice(targetIndex, 0, moved);
+
+        todos.forEach((t, idx) => {
+          t.order = idx;
+        });
+
+        store.saveTodos(todos);
+        renderTodos();
+        showToast('Task order updated', 'info');
+      }
+    });
+  });
+}
+
+// --- BACKUP & SETTINGS MODAL ---
+function openSettingsModal() {
+  document.getElementById('settingsModal').classList.add('active');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal').classList.remove('active');
+}
+
+function exportDashboardData() {
+  const data = store.exportData();
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `daily-dashboard-backup-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Dashboard exported to JSON file', 'success');
+}
+
+function importDashboardData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const data = JSON.parse(event.target.result);
+      store.importData(data);
+      renderHomework();
+      updateSubjectDropdown();
+      renderTodos();
+      updateProgressAndMotivation();
+      closeSettingsModal();
+      showToast('Data imported successfully!', 'success');
+    } catch (err) {
+      alert('Invalid JSON file format.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function resetAllData() {
+  if (confirm('Re-synchronize and reset all tasks and assignments to your Google Calendar & Tasks?')) {
+    store.resetDefaults();
+    renderHomework();
+    updateSubjectDropdown();
+    renderTodos();
+    updateProgressAndMotivation();
+    closeSettingsModal();
+    showToast('Reset & synchronized with Google Calendar', 'info');
+  }
+}
+
+// --- UTILITIES & TOASTS ---
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+function showToast(message, type = 'info') {
+  let container = document.getElementById('toastContainer');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'toastContainer';
+    container.className = 'toast-container';
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(10px)';
+    toast.style.transition = 'all 0.3s ease';
+    setTimeout(() => toast.remove(), 300);
+  }, 2500);
+}
+
+
+// --- GOOGLE CALENDAR WEEK OVERVIEW MODULE ---
+const WEEK_SCHEDULE = [
+  {
+    "date": "2026-10-03",
+    "dayName": "Sat",
+    "dateStr": "Oct 3",
+    "isToday": true,
+    "events": [
+      {
+        "time": "9:50 AM",
+        "title": "Generative AI Mastermind INTL",
+        "category": "Personal",
+        "color": "#0ea5e9",
+        "link": "https://www.google.com/calendar/event?eid=YzBpZDliNjllc2c1c2FlbTJ1Y285cmZpcXMgYWJoZWVra2FqYUBt"
+      },
+      {
+        "time": "Due Today",
+        "title": "Honors Lit: Read Ch 8-10",
+        "category": "Honors Literature",
+        "color": "#a855f7",
+        "link": "https://www.google.com/calendar/event?eid=NnI2bTZ1ZXAzaHZlN200aTN2cTUyZ21idTkgNzJhM2FmYTQxMWE3N2NiZDEwZTE0ZmUzYjQ4YzA1MDBlZWJjMTkxOTVhZWRkYzk3MGEyYjk3YjBjNjkxZWM2OEBn"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-04",
+    "dayName": "Sun",
+    "dateStr": "Oct 4",
+    "isToday": false,
+    "events": [
+      {
+        "time": "Study Block",
+        "title": "Prepare for Chem U3 Test & Alg II Quiz 3",
+        "category": "Personal",
+        "color": "#6366f1",
+        "link": "https://calendar.google.com"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-05",
+    "dayName": "Mon",
+    "dateStr": "Oct 5",
+    "isToday": false,
+    "events": [
+      {
+        "time": "8:00 AM",
+        "title": "\ud83c\udfaf Focus Time (8 AM - 2 PM)",
+        "category": "Personal",
+        "color": "#0ea5e9",
+        "link": "https://www.google.com/calendar/event?eid=cmVjbGFpbTBmb2N1czBvMDIwbzAzMDE5MTU2MG8wMjAyNjEwMDUwbzA1NjE2MDQwbzAwMG8wNzk3MDk3ODY1IGFiaGVla2thamFAbQ"
+      },
+      {
+        "time": "Exam",
+        "title": "STEM Chem: U3 Test",
+        "category": "STEM Honors Chem",
+        "color": "#10b981",
+        "link": "https://www.google.com/calendar/event?eid=NDl0dmxjdG5wYjVnNGlrdmhobmtobWhzY3AgbzRuYW5jN250OWFwZDZwaHI5cDY3MjczaWdAZw"
+      },
+      {
+        "time": "Quiz",
+        "title": "Honors Alg II: Quiz 3",
+        "category": "Honors Algebra II",
+        "color": "#3b82f6",
+        "link": "https://www.google.com/calendar/event?eid=NGU0ajh1MzBzcmF1ZDR0ajRwcnVscjc0NXEgOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn"
+      },
+      {
+        "time": "Quiz",
+        "title": "AP Gov: Exec Branch PPT Quiz",
+        "category": "A.P. Government",
+        "color": "#f43f5e",
+        "link": "https://www.google.com/calendar/event?eid=MDJiN2lrdGduODZhdmQ2ODcycmMwcWJhOTkgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw"
+      },
+      {
+        "time": "Due Today",
+        "title": "AP Gov: Self-Evaluation Form 2",
+        "category": "A.P. Government",
+        "color": "#f43f5e",
+        "link": "https://www.google.com/calendar/event?eid=MmRuOW42YWhvY2Z2dGVqMHRsbjVjOHBqNnAgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-06",
+    "dayName": "Tue",
+    "dateStr": "Oct 6",
+    "isToday": false,
+    "events": [
+      {
+        "time": "8:00 AM",
+        "title": "\ud83c\udfaf Focus Time (8 AM - 2 PM)",
+        "category": "Personal",
+        "color": "#0ea5e9",
+        "link": "https://www.google.com/calendar/event?eid=cmVjbGFpbTBmb2N1czBvMDIwbzAzMDE5MTU2MG8wMjAyNjEwMDYwbzA1NjE2MDQwbzAwMG8wMTAyNzE3MDE0MSBhYmhlZWtrYWphQG0"
+      },
+      {
+        "time": "Quiz",
+        "title": "Honors Alg II: Quiz 4",
+        "category": "Honors Algebra II",
+        "color": "#3b82f6",
+        "link": "https://www.google.com/calendar/event?eid=M3J2aGdxZW00YXA5dXVvcmN1NGplNzhmNzMgOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn"
+      },
+      {
+        "time": "Due Today",
+        "title": "AP Gov: Getting to Know Bureaucracy",
+        "category": "A.P. Government",
+        "color": "#f43f5e",
+        "link": "https://www.google.com/calendar/event?eid=NTMycjQ0MXBmZzBqMDZqdm1rZWFlZGp1aGYgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-07",
+    "dayName": "Wed",
+    "dateStr": "Oct 7",
+    "isToday": false,
+    "events": [
+      {
+        "time": "8:00 AM",
+        "title": "\ud83c\udfaf Focus Time (8 AM - 2 PM)",
+        "category": "Personal",
+        "color": "#0ea5e9",
+        "link": "https://www.google.com/calendar/event?eid=cmVjbGFpbTBmb2N1czBvMDIwbzAzMDE5MTU2MG8wMjAyNjEwMDcwbzA1NjE2MDQwbzAwMG8wMTQyMTg2Mjc2MiBhYmhlZWtrYWphQG0"
+      },
+      {
+        "time": "All-Day",
+        "title": "AP Gov: WEB Day (PSAT 9th/10th)",
+        "category": "A.P. Government",
+        "color": "#f43f5e",
+        "link": "https://www.google.com/calendar/event?eid=NW1vZWgxN2RnYzFlZnRvajZhczY0cmlrcDAgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw"
+      },
+      {
+        "time": "Due Today",
+        "title": "AP Gov: Concept App FRQ Practice",
+        "category": "A.P. Government",
+        "color": "#f43f5e",
+        "link": "https://www.google.com/calendar/event?eid=MGY5YzhvM2k1a21qaWc4dXNzaDMzY2c4MWYgMDRpYWptOTlwbGJwc2Nidmtzb2VqMDVmZW9AZw"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-08",
+    "dayName": "Thu",
+    "dateStr": "Oct 8",
+    "isToday": false,
+    "events": [
+      {
+        "time": "8:00 AM",
+        "title": "\ud83c\udfaf Focus Time (8 AM - 2 PM)",
+        "category": "Personal",
+        "color": "#0ea5e9",
+        "link": "https://www.google.com/calendar/event?eid=cmVjbGFpbTBmb2N1czBvMDIwbzAzMDE5MTU2MG8wMjAyNjEwMDgwbzA1NjE2MDQwbzAwMG8wMzA0NTM3ODM0IGFiaGVla2thamFAbQ"
+      },
+      {
+        "time": "Major Exam",
+        "title": "STEM PLTW: TEST: Muscles",
+        "category": "STEM PLTW Human Body",
+        "color": "#f59e0b",
+        "link": "https://www.google.com/calendar/event?eid=NWNnaHRxNGowaTg3NGY4dHB0c3FkNW1hb3UgM2UxYjI0ZjFlMmEzYTViZjYwZTVmMzQxZTMyNjZiMzc1NzFlMGQzYjdmYTQwNzFlZWQ4YTA1YzE0MWUwNDVkOEBn"
+      },
+      {
+        "time": "Quiz",
+        "title": "Honors Lit: Vocab Quiz",
+        "category": "Honors Literature",
+        "color": "#a855f7",
+        "link": "https://www.google.com/calendar/event?eid=NWY0NXJlZWhoMjUxcnM3aGFyZDFyZnRwYnQgNzJhM2FmYTQxMWE3N2NiZDEwZTE0ZmUzYjQ4YzA1MDBlZWJjMTkxOTVhZWRkYzk3MGEyYjk3YjBjNjkxZWM2OEBn"
+      },
+      {
+        "time": "HW",
+        "title": "Honors Alg II: HW Deltamath",
+        "category": "Honors Algebra II",
+        "color": "#3b82f6",
+        "link": "https://www.google.com/calendar/event?eid=Mmgwazl0M2c5b2c2NXBtaHZ2MmJ2NHU3c2ggOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn"
+      }
+    ]
+  },
+  {
+    "date": "2026-10-09",
+    "dayName": "Fri",
+    "dateStr": "Oct 9",
+    "isToday": false,
+    "events": [
+      {
+        "time": "8:00 AM",
+        "title": "\ud83c\udfaf Focus Time (8 AM - 2 PM)",
+        "category": "Personal",
+        "color": "#0ea5e9",
+        "link": "https://www.google.com/calendar/event?eid=cmVjbGFpbTBmb2N1czBvMDIwbzAzMDE5MTU2MG8wMjAyNjEwMDkwbzA1NjE2MDQwbzAwMG8wMjA4MjU4NjU1NSBhYmhlZWtrYWphQG0"
+      },
+      {
+        "time": "Unit Exam",
+        "title": "Honors Alg II: TEST: Unit 3",
+        "category": "Honors Algebra II",
+        "color": "#3b82f6",
+        "link": "https://www.google.com/calendar/event?eid=MnBzbmk0Z3ZmbXNoMjdqYTRlaTF2czkwdTUgOGU2NTYzNDFlY2Y0OGUzZDEwOGEwMmNhYjRkZGIwZjExMTFlZjRkNDFlZGQ1YmFjODlhNGEzNjk4ODg3YTVhZkBn"
+      },
+      {
+        "time": "Reading",
+        "title": "Honors Lit: Read Ch 11-13",
+        "category": "Honors Literature",
+        "color": "#a855f7",
+        "link": "https://www.google.com/calendar/event?eid=N3ZubDVibDg1YmhhZnFqZ29iZjMwaW4xM20gNzJhM2FmYTQxMWE3N2NiZDEwZTE0ZmUzYjQ4YzA1MDBlZWJjMTkxOTVhZWRkYzk3MGEyYjk3YjBjNjkxZWM2OEBn"
+      }
+    ]
+  }
+];
+
+function renderWeekOverview() {
+  const container = document.getElementById('weekGridContainer');
+  if (!container) return;
+
+  container.innerHTML = WEEK_SCHEDULE.map(day => `
+    <div class="week-day-card ${day.isToday ? 'is-today' : ''}">
+      <div class="week-day-header">
+        <div>
+          <span class="week-day-name">${day.dayName}</span>
+          <div class="week-day-date">${day.dateStr}</div>
+        </div>
+        ${day.isToday ? '<span class="today-pill">TODAY</span>' : `<span style="font-size: 0.7rem; color: var(--text-dim);">${day.events.length} items</span>`}
+      </div>
+      <div class="week-day-events">
+        ${day.events.length === 0 ? '<div class="week-empty-day">No scheduled events</div>' : day.events.map(ev => `
+          <a href="${ev.link}" target="_blank" rel="noopener noreferrer" class="week-event-chip" style="border-left-color: ${ev.color};" title="${escapeHtml(ev.title)} (${ev.category})">
+            <span class="chip-time">${escapeHtml(ev.time)}</span>
+            <span class="chip-title">${escapeHtml(ev.title)}</span>
+          </a>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+// --- APP INITIALIZATION ---
+document.addEventListener('DOMContentLoaded', () => {
+  initHeader();
+  renderWeekOverview();
+  renderNews();
+  renderHomework();
+  updateSubjectDropdown();
+  renderTodos();
+  updateProgressAndMotivation();
+
+  // News tab switching
+  document.querySelectorAll('#newsTabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => switchNewsTab(btn.dataset.tab));
+  });
+
+  // News search
+  const newsSearch = document.getElementById('newsSearchInput');
+  if (newsSearch) {
+    newsSearch.addEventListener('input', (e) => {
+      newsSearchQuery = e.target.value.trim();
+      renderNews();
+    });
+  }
+
+  // Homework filters
+  const hwSubjectFilter = document.getElementById('homeworkSubjectFilter');
+  if (hwSubjectFilter) {
+    hwSubjectFilter.addEventListener('change', (e) => {
+      homeworkFilterSubject = e.target.value;
+      renderHomework();
+    });
+  }
+
+  document.querySelectorAll('#hwStatusPills .filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#hwStatusPills .filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      homeworkFilterStatus = pill.dataset.status;
+      renderHomework();
+    });
+  });
+
+  // Todo filter views
+  document.querySelectorAll('#todoViewTabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#todoViewTabs .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      todoFilterView = btn.dataset.view;
+      renderTodos();
+    });
+  });
+
+  // Todo tag filters
+  document.querySelectorAll('#todoTagPills .filter-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#todoTagPills .filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      todoFilterTag = pill.dataset.tag;
+      renderTodos();
+    });
+  });
+});
+
+</script>
+</body>
+</html>
